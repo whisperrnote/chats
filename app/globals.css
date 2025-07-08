@@ -1,26 +1,71 @@
-@import "tailwindcss";
-
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
-
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+  --color-bg: #18120b;
+  --color-surface: #23180e;
+  --color-primary: #b97a56;
+  --color-accent: #e0b97a;
+  --color-text: #f5e9da;
+  --color-border: #3a2a18;
+  --radius: 12px;
+  --shadow: 0 2px 8px rgba(0,0,0,0.12);
+  --transition: 0.2s cubic-bezier(.4,0,.2,1);
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  margin: 0;
+  padding: 0;
+  background: var(--color-bg);
+  color: var(--color-text);
+  font-family: 'Inter', system-ui, sans-serif;
+  min-height: 100vh;
+  transition: background var(--transition), color var(--transition);
 }
+
+* {
+  box-sizing: border-box;
+}
+
+a {
+  color: var(--color-accent);
+  text-decoration: none;
+}
+
+button, input, select, textarea {
+  font-family: inherit;
+  border-radius: var(--radius);
+  border: 1px solid var(--color-border);
+  background: var(--color-surface);
+  color: var(--color-text);
+  transition: background var(--transition), color var(--transition), border var(--transition);
+}
+
+::-webkit-scrollbar {
+  width: 8px;
+  background: var(--color-surface);
+}
+::-webkit-scrollbar-thumb {
+  background: var(--color-border);
+  border-radius: 4px;
+}
+
+/* Layout helpers */
+.flex {
+  display: flex;
+}
+.flex-col {
+  flex-direction: column;
+}
+.flex-1 {
+  flex: 1 1 0%;
+}
+.center {
+  align-items: center;
+  justify-content: center;
+}
+
+/* Placeholder for animation level classes */
+.anim-off * { transition: none !important; }
+.anim-minimal * { transition: background 0.1s, color 0.1s; }
+.anim-moderate * { transition: var(--transition); }
+.anim-maximal * { transition: var(--transition); }
+
+/* ...add more as needed... */
