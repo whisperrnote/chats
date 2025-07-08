@@ -189,6 +189,106 @@
                     ],
                     "format": "enum",
                     "default": null
+                },
+                {
+                    "key": "usernameCredibility",
+                    "type": "integer",
+                    "required": false,
+                    "array": false,
+                    "min": 0,
+                    "max": 100,
+                    "default": null
+                },
+                {
+                    "key": "usernameHistory",
+                    "type": "string",
+                    "required": false,
+                    "array": true,
+                    "size": 32,
+                    "default": null
+                },
+                {
+                    "key": "usernameChangedAt",
+                    "type": "datetime",
+                    "required": false,
+                    "array": false,
+                    "format": "",
+                    "default": null
+                },
+                {
+                    "key": "credibilityTier",
+                    "type": "string",
+                    "required": false,
+                    "array": false,
+                    "elements": [
+                        "bronze",
+                        "silver",
+                        "gold",
+                        "platinum",
+                        "diamond"
+                    ],
+                    "format": "enum",
+                    "default": null
+                },
+                {
+                    "key": "credibilityScore",
+                    "type": "integer",
+                    "required": false,
+                    "array": false,
+                    "min": 0,
+                    "max": 100,
+                    "default": null
+                },
+                {
+                    "key": "credibilityHistory",
+                    "type": "string",
+                    "required": false,
+                    "array": true,
+                    "size": 255,
+                    "default": null
+                },
+                {
+                    "key": "twoFactorEnabled",
+                    "type": "boolean",
+                    "required": false,
+                    "array": false,
+                    "default": null
+                },
+                {
+                    "key": "emailVerified",
+                    "type": "boolean",
+                    "required": false,
+                    "array": false,
+                    "default": null
+                },
+                {
+                    "key": "phoneVerified",
+                    "type": "boolean",
+                    "required": false,
+                    "array": false,
+                    "default": null
+                },
+                {
+                    "key": "encryptionKeyExported",
+                    "type": "boolean",
+                    "required": false,
+                    "array": false,
+                    "default": null
+                },
+                {
+                    "key": "recoveryPhraseBackedUp",
+                    "type": "boolean",
+                    "required": false,
+                    "array": false,
+                    "default": null
+                },
+                {
+                    "key": "encryptedPrivateKey",
+                    "type": "string",
+                    "required": false,
+                    "array": false,
+                    "size": 2000,
+                    "default": null
                 }
             ],
             "indexes": [
@@ -735,6 +835,99 @@
             "documentSecurity": false,
             "attributes": [],
             "indexes": []
+        },
+        {
+            "$id": "usernames",
+            "$permissions": [
+                "read(\"any\")",
+                "create(\"any\")",
+                "update(\"any\")",
+                "delete(\"any\")"
+            ],
+            "databaseId": "core",
+            "name": "Usernames",
+            "enabled": true,
+            "documentSecurity": false,
+            "attributes": [
+                {
+                    "key": "username",
+                    "type": "string",
+                    "required": true,
+                    "array": false,
+                    "size": 32,
+                    "default": null
+                },
+                {
+                    "key": "status",
+                    "type": "string",
+                    "required": true,
+                    "array": false,
+                    "elements": [
+                        "active",
+                        "cooldown",
+                        "available",
+                        "banned"
+                    ],
+                    "format": "enum",
+                    "default": null
+                },
+                {
+                    "key": "lastUsedBy",
+                    "type": "relationship",
+                    "required": false,
+                    "array": false,
+                    "relatedCollection": "users",
+                    "relationType": "oneToOne",
+                    "twoWay": false,
+                    "twoWayKey": "usernames",
+                    "onDelete": "restrict",
+                    "side": "parent"
+                },
+                {
+                    "key": "lastUsedAt",
+                    "type": "datetime",
+                    "required": false,
+                    "array": false,
+                    "format": "",
+                    "default": null
+                },
+                {
+                    "key": "cooldownUntil",
+                    "type": "datetime",
+                    "required": false,
+                    "array": false,
+                    "format": "",
+                    "default": null
+                },
+                {
+                    "key": "history",
+                    "type": "string",
+                    "required": false,
+                    "array": true,
+                    "size": 36,
+                    "default": null
+                }
+            ],
+            "indexes": [
+                {
+                    "key": "unique_username",
+                    "type": "unique",
+                    "status": "available",
+                    "attributes": [
+                        "username"
+                    ],
+                    "orders": []
+                },
+                {
+                    "key": "status_index",
+                    "type": "key",
+                    "status": "available",
+                    "attributes": [
+                        "status"
+                    ],
+                    "orders": []
+                }
+            ]
         }
     ]
 }
