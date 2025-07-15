@@ -289,6 +289,13 @@
                     "array": false,
                     "size": 2000,
                     "default": null
+                },
+                {
+                    "key": "deleted",
+                    "type": "boolean",
+                    "required": false,
+                    "array": false,
+                    "default": null
                 }
             ],
             "indexes": [
@@ -433,6 +440,13 @@
                     "array": false,
                     "size": 32,
                     "default": null
+                },
+                {
+                    "key": "deleted",
+                    "type": "boolean",
+                    "required": false,
+                    "array": false,
+                    "default": null
                 }
             ],
             "indexes": [
@@ -522,6 +536,13 @@
                     "required": false,
                     "array": false,
                     "format": "",
+                    "default": null
+                },
+                {
+                    "key": "deleted",
+                    "type": "boolean",
+                    "required": false,
+                    "array": false,
                     "default": null
                 }
             ],
@@ -639,6 +660,13 @@
                     "array": false,
                     "size": 1000,
                     "default": null
+                },
+                {
+                    "key": "deleted",
+                    "type": "boolean",
+                    "required": false,
+                    "array": false,
+                    "default": null
                 }
             ],
             "indexes": [
@@ -702,6 +730,13 @@
                     "array": false,
                     "size": 64,
                     "default": null
+                },
+                {
+                    "key": "deleted",
+                    "type": "boolean",
+                    "required": false,
+                    "array": false,
+                    "default": null
                 }
             ],
             "indexes": []
@@ -761,6 +796,13 @@
                     "required": true,
                     "array": false,
                     "format": "",
+                    "default": null
+                },
+                {
+                    "key": "deleted",
+                    "type": "boolean",
+                    "required": false,
+                    "array": false,
                     "default": null
                 }
             ],
@@ -928,6 +970,56 @@
                     "orders": []
                 }
             ]
+        }
+    ],
+    "buckets": [
+        {
+            "$id": "user-avatars",
+            "$permissions": [],
+            "fileSecurity": true,
+            "name": "User Avatars",
+            "enabled": true,
+            "maximumFileSize": 5000000000,
+            "allowedFileExtensions": [],
+            "compression": "none",
+            "encryption": true,
+            "antivirus": true
+        },
+        {
+            "$id": "chat-media",
+            "$permissions": [],
+            "fileSecurity": true,
+            "name": "Chat Media",
+            "enabled": true,
+            "maximumFileSize": 5000000000,
+            "allowedFileExtensions": [],
+            "compression": "none",
+            "encryption": true,
+            "antivirus": true
+        },
+        {
+            "$id": "backgrounds",
+            "$permissions": [],
+            "fileSecurity": true,
+            "name": "Backgrounds",
+            "enabled": true,
+            "maximumFileSize": 5000000000,
+            "allowedFileExtensions": [],
+            "compression": "none",
+            "encryption": true,
+            "antivirus": true
+        },
+        {
+            "$id": "extension-assets",
+            "$permissions": [],
+            "fileSecurity": true,
+            "name": "Extension Assets",
+            "enabled": true,
+            "maximumFileSize": 5000000000,
+            "allowedFileExtensions": [],
+            "compression": "none",
+            "encryption": true,
+            "antivirus": true
         }
     ]
 }
