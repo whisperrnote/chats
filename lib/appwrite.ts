@@ -1,5 +1,6 @@
 import {
-  Client, Account, Databases, Storage, Avatars, ID, Query, Permission, Role as AppwriteRole
+  Client, Account, Databases, Storage, Avatars, ID, Query, Permission, Role as AppwriteRole,
+  AuthenticationFactor
 } from 'appwrite';
 import type * as Types from '../types/appwrite.d';
 
@@ -100,7 +101,7 @@ export async function setMfaEnabled(enabled: boolean) {
   return account.updateMFA(enabled);
 }
 export async function createMfaChallenge(factor: 'totp' | 'email' | 'recoverycode') {
-  return account.createMfaChallenge(factor);
+  return account.createMfaChallenge(AuthenticationFactor.Totp);
 }
 export async function completeMfaChallenge(challengeId: string, code: string) {
   return account.updateMfaChallenge(challengeId, code);
@@ -141,6 +142,9 @@ export async function getUsernameDoc(username: string) {
 export async function updateUsernameDoc(usernameId: string, data: any) {
   return databases.updateDocument(DB_CORE, COLLECTIONS.USERNAMES, usernameId, data);
 }
+export async function listUsernames(queries: any[] = []) {
+  return databases.listDocuments(DB_CORE, COLLECTIONS.USERNAMES, queries);
+}
 
 // --- CHATS ---
 export async function createChat(data: Partial<Types.Chats>, chatId: string = ID.unique()) {
@@ -161,6 +165,12 @@ export async function listChats(queries: any[] = []) {
 export async function listChatsByUser(userId: string) {
   return databases.listDocuments(DB_CORE, COLLECTIONS.CHATMEMBERS, [Query.equal('userId', userId)]);
 }
+export async function searchChatsByTitle(userId: string, searchTerm: string) {
+  const userChats = await listChatsByUser(userId);
+  return userChats.documents.filter((cm: Types.ChatMembers) =>
+    cm.chatId?.title?.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+}
 
 // --- CHAT MEMBERS ---
 export async function addChatMember(data: Partial<Types.ChatMembers>, chatMemberId: string = ID.unique()) {
@@ -174,6 +184,9 @@ export async function removeChatMember(chatMemberId: string) {
 }
 export async function listChatMembers(chatId: string) {
   return databases.listDocuments(DB_CORE, COLLECTIONS.CHATMEMBERS, [Query.equal('chatId', chatId)]);
+}
+export async function listUserChatMemberships(userId: string) {
+  return databases.listDocuments(DB_CORE, COLLECTIONS.CHATMEMBERS, [Query.equal('userId', userId)]);
 }
 
 // --- MESSAGES ---
@@ -200,6 +213,12 @@ export async function listMessagesByUser(userId: string, queries: any[] = []) {
     Query.equal('senderId', userId),
     ...queries,
   ]);
+}
+export async function searchMessages(chatId: string, searchTerm: string) {
+  const messages = await listMessages(chatId);
+  return messages.documents.filter((msg: Types.Messages) =>
+    msg.content?.toLowerCase().includes(searchTerm.toLowerCase())
+  );
 }
 
 // --- CONTACTS ---
@@ -314,13 +333,6 @@ export async function getMessagesForChat(chatId: string, limit = 50) {
   ]);
 }
 
-export async function searchChats(userId: string, searchTerm: string) {
-  const userChats = await listChatsByUser(userId);
-  return userChats.documents.filter(chat => 
-    chat.title?.toLowerCase().includes(searchTerm.toLowerCase())
-  );
-}
-
 // --- Real-time Subscriptions ---
 export function subscribeToChat(chatId: string, callback: (payload: any) => void) {
   return client.subscribe(`databases.${DB_CORE}.collections.${COLLECTIONS.MESSAGES}.documents`, callback);
@@ -331,7 +343,7 @@ export function subscribeToUserChats(userId: string, callback: (payload: any) =>
 }
 
 // --- User Profile Management ---
-export async function getCurrentUserProfile(): Promise<Users | null> {
+export async function getCurrentUserProfile(): Promise<Types.Users | null> {
   try {
     const account = await getCurrentAccount();
     const profile = await getUser(account.$id);
@@ -342,10 +354,27 @@ export async function getCurrentUserProfile(): Promise<Users | null> {
   }
 }
 
-export async function updateUserProfile(data: Partial<Users>) {
+export async function updateUserProfile(data: Partial<Types.Users>) {
   const userId = await getCurrentUserId();
   if (!userId) throw new Error('Not authenticated');
   return updateUser(userId, data);
+}
+
+// --- Storage: Avatars, Media, Backgrounds, Extensions ---
+export async function uploadFile(bucketId: string, file: File, fileId: string = ID.unique(), permissions: string[] = []) {
+  return storage.createFile(bucketId, fileId, file, permissions);
+}
+export async function getFilePreview(bucketId: string, fileId: string) {
+  return storage.getFilePreview(bucketId, fileId);
+}
+export async function getFileDownload(bucketId: string, fileId: string) {
+  return storage.getFileDownload(bucketId, fileId);
+}
+export async function deleteFile(bucketId: string, fileId: string) {
+  return storage.deleteFile(bucketId, fileId);
+}
+export async function listFiles(bucketId: string, queries: any[] = []) {
+  return storage.listFiles(bucketId, queries);
 }
 
 export default client;
