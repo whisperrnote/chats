@@ -95,7 +95,7 @@ export default function HeroSection() {
                 textShadow: '0 0 30px rgba(255, 107, 107, 0.3)',
               }}
             >
-              WhisperrNote
+              Whisperrchat
             </Typography>
           </motion.div>
           

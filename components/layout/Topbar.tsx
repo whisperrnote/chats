@@ -3,17 +3,20 @@ import { AppBar, Toolbar, Box } from '@mui/material';
 import { styled } from '@mui/material/styles';
 import { useRouter } from 'next/navigation';
 import { motion } from 'framer-motion';
-import Logo from '../ui/Logo';
-import Navigation from '../ui/Navigation';
-import ThemeSwitcher from '../ui/ThemeSwitcher';
-import ContinueButton from '../ui/ContinueButton';
+import Image from 'next/image';
+import Navigation from '@/components/ui/Navigation';
+import ThemeSwitcher from '@/components/ui/ThemeSwitcher';
+import ContinueButton from '@/components/ui/ContinueButton';
 
+// Use only brown shades and subtle green hints for gradients/highlights
 const GlassAppBar = styled(AppBar)(({ theme }) => ({
-  background: 'rgba(255, 255, 255, 0.1)',
+  background: theme.palette.mode === 'dark'
+    ? 'linear-gradient(90deg, rgba(35,24,14,0.92) 70%, rgba(78,205,196,0.08) 100%)'
+    : 'linear-gradient(90deg, #f5e9da 70%, #b7e6c8 100%)',
   backdropFilter: 'blur(20px)',
   borderRadius: '0 0 24px 24px',
-  boxShadow: '0 8px 32px rgba(0, 0, 0, 0.1)',
-  border: '1px solid rgba(255, 255, 255, 0.2)',
+  boxShadow: '0 8px 32px rgba(124,77,30,0.09)',
+  border: `1px solid ${theme.palette.mode === 'dark' ? '#3a2a18' : '#e8ded6'}`,
   position: 'sticky',
   top: 0,
   zIndex: 1000,
@@ -36,12 +39,20 @@ export default function Topbar() {
             minHeight: { xs: 56, md: 64 },
           }}
         >
-          <Logo />
-          {/* Navigation always visible, but can be styled for mobile */}
+          {/* Logo image */}
+          <Box sx={{ display: 'flex', alignItems: 'center' }}>
+            <Image
+              src="/images/logo.png"
+              alt="whisperrchat logo"
+              width={40}
+              height={40}
+              style={{ borderRadius: 8, marginRight: 12 }}
+              priority
+            />
+          </Box>
           <Box sx={{ flex: 1, justifyContent: 'center', display: 'flex' }}>
             <Navigation />
           </Box>
-          {/* Actions */}
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
             <ThemeSwitcher />
             <ContinueButton onClick={() => router.push('/auth')} />

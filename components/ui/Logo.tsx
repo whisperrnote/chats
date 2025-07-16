@@ -40,7 +40,7 @@ export default function Logo() {
             color: 'transparent',
           }}
         >
-          WhisperrNote
+          Whisperrchat
         </Typography>
       </Box>
     </motion.div>
