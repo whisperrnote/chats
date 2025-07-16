@@ -2,13 +2,19 @@
 import { Typography, TextField, Button, ToggleButtonGroup, ToggleButton, CircularProgress } from '@mui/material';
 import { motion } from 'framer-motion';
 import { useAuthFlow } from '@/store/authFlow';
-import { generateRecoveryPhrase, deriveEncryptionKey } from '@/lib/phrase';
+import { 
+  generateRecoveryPhrase, 
+  deriveEncryptionKey, 
+  generateKeyPair, 
+  encryptPrivateKey 
+} from '@/lib/phrase';
 import {
   signupEmailPassword,
   loginEmailPassword,
   findUserByUsername,
   createUserProfile,
   usernameToEmail,
+  ID,
 } from '@/lib/appwrite';
 import { useState } from 'react';
 
@@ -51,29 +57,43 @@ export default function AuthPhraseInputOrGen() {
     setError('');
     try {
       // Check if username already exists
-      const user = await findUserByUsername(username);
-      if (user) {
+      const existingUser = await findUserByUsername(username);
+      if (existingUser) {
         setError('Username already exists. Please choose another.');
         setLoading(false);
         return;
       }
-      // Create Appwrite account and session
+      
+      // Generate unique user ID
+      const userId = ID.unique();
       const email = usernameToEmail(username);
-      const session = await signupEmailPassword(email, phrase, username);
-      // Generate keys and encrypt private key
-      const { publicKey, encryptedPrivateKey } = await generateKeysAndEncrypt(phrase, username);
-      // Create user profile in DB
+      
+      // Create Appwrite account and session
+      const { session } = await signupEmailPassword(email, phrase, username, userId);
+      
+      // Derive encryption key from mnemonic
+      const encryptionKey = await deriveEncryptionKey(phrase, canonizeUsername(username) || username);
+      
+      // Generate keypair for E2E encryption
+      const { publicKey, privateKey } = await generateKeyPair();
+      
+      // Encrypt private key with derived key
+      const encryptedPrivateKey = await encryptPrivateKey(privateKey, encryptionKey);
+      
+      // Create user profile in database
       await createUserProfile({
-        userId: session.userId || session.user.$id,
+        userId,
         username,
         displayName: username,
         email,
         publicKey,
         encryptedPrivateKey,
       });
+      
       setStep('done');
     } catch (e: any) {
-      setError('Failed to create account. Username may be taken or phrase invalid.');
+      console.error('Signup error:', e);
+      setError(`Failed to create account: ${e.message || 'Unknown error'}`);
     } finally {
       setLoading(false);
     }
@@ -90,9 +110,17 @@ export default function AuthPhraseInputOrGen() {
         setLoading(false);
         return;
       }
-      await loginEmailPassword(usernameToEmail(username), phrase);
+      
+      const email = usernameToEmail(username);
+      await loginEmailPassword(email, phrase);
+      
+      // Derive encryption key and store in session (for message decryption)
+      const encryptionKey = await deriveEncryptionKey(phrase, canonizeUsername(username) || username);
+      // Store in context/zustand for session use
+      
       setStep('done');
     } catch (e: any) {
+      console.error('Login error:', e);
       setError('Invalid recovery phrase or account.');
     } finally {
       setLoading(false);

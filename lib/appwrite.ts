@@ -68,8 +68,11 @@ export async function signupEmailPassword(
   name: string,
   userId: string = ID.unique()
 ) {
-  await account.create(userId, email, password, name);
-  return account.createEmailPasswordSession(email, password);
+  // Create Appwrite account first
+  const account = await account.create(userId, email, password, name);
+  // Then create session
+  const session = await account.createEmailPasswordSession(email, password);
+  return { account, session, userId };
 }
 
 export async function loginEmailPassword(email: string, password: string) {
@@ -145,6 +148,7 @@ export async function completeMfaChallenge(challengeId: string, code: string) {
 
 // --- USERS ---
 
+// --- Create user profile in DB with proper error handling ---
 export async function createUserProfile({
   userId,
   username,
@@ -161,20 +165,31 @@ export async function createUserProfile({
   encryptedPrivateKey: string;
 }) {
   const now = new Date().toISOString();
-  return databases.createDocument(DB_CORE, COLLECTIONS.USERS, userId, {
-    userId,
-    username: canonizeUsername(username),
-    displayName,
-    email,
-    publicKey,
-    encryptedPrivateKey,
-    createdAt: now,
-    lastSeen: now,
-    status: 'offline',
-    credibilityTier: 'bronze',
-    credibilityScore: 100,
-    deleted: false,
-  });
+  
+  try {
+    return await databases.createDocument(DB_CORE, COLLECTIONS.USERS, userId, {
+      userId,
+      username: canonizeUsername(username),
+      displayName,
+      email,
+      publicKey,
+      encryptedPrivateKey,
+      createdAt: now,
+      lastSeen: now,
+      status: 'offline',
+      credibilityTier: 'bronze',
+      credibilityScore: 100,
+      twoFactorEnabled: false,
+      emailVerified: false,
+      phoneVerified: false,
+      encryptionKeyExported: false,
+      recoveryPhraseBackedUp: false,
+      deleted: false,
+    });
+  } catch (error) {
+    console.error('Error creating user profile:', error);
+    throw error;
+  }
 }
 
 export async function createUser(data: Partial<Types.Users>, userId: string = ID.unique()) {
