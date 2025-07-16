@@ -11,15 +11,23 @@ import ResponsiveDrawer from '@/components/app/ResponsiveDrawer';
 import { useAppLayout } from '@/store/layout';
 import { useEffect } from 'react';
 import { useAuth } from '@/store/auth';
+import { useRouter } from 'next/navigation';
 
 export default function AppShell() {
   const theme = useTheme();
   const { showProfile, showExtensions, isMobile } = useAppLayout();
-  const { initializeAuth } = useAuth();
+  const { isAuthenticated, isLoading, initializeAuth } = useAuth();
+  const router = useRouter();
 
   useEffect(() => {
     initializeAuth();
   }, [initializeAuth]);
+
+  useEffect(() => {
+    if (!isLoading && !isAuthenticated) {
+      router.replace('/auth');
+    }
+  }, [isAuthenticated, isLoading, router]);
 
   return (
     <motion.div

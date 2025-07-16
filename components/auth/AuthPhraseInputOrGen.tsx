@@ -1,16 +1,53 @@
-import { Typography, TextField, Button, ToggleButtonGroup, ToggleButton } from '@mui/material';
+'use client';
+import { Typography, TextField, Button, ToggleButtonGroup, ToggleButton, CircularProgress } from '@mui/material';
 import { motion } from 'framer-motion';
-import { useAuthFlow } from '../../store/authFlow';
-import { generateRecoveryPhrase, verifyRecoveryPhrase } from '../../lib/phrase';
+import { useAuthFlow } from '@/store/authFlow';
+import { generateRecoveryPhrase, verifyRecoveryPhrase } from '@/lib/phrase';
+import { loginEmailPassword, signupEmailPassword } from '@/lib/appwrite';
+import { useState } from 'react';
 
 export default function AuthPhraseInputOrGen() {
   const {
     usernameExists,
+    username,
     phraseType, setPhraseType,
     phrase, setPhrase,
-    step, setStep,
+    setStep,
     error, setError
   } = useAuthFlow();
+
+  const [loading, setLoading] = useState(false);
+
+  // Helper to create a pseudo-email from username
+  const getEmail = (username: string) => `${username}@whisperrchat.local`;
+
+  // Login handler
+  const handleLogin = async () => {
+    setLoading(true);
+    setError('');
+    try {
+      await loginEmailPassword(getEmail(username), phrase);
+      setStep('done');
+    } catch (e: any) {
+      setError('Invalid recovery phrase or account.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Signup handler
+  const handleSignup = async () => {
+    setLoading(true);
+    setError('');
+    try {
+      await signupEmailPassword(getEmail(username), phrase, username);
+      setStep('done');
+    } catch (e: any) {
+      setError('Failed to create account. Username may be taken.');
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
@@ -28,17 +65,10 @@ export default function AuthPhraseInputOrGen() {
           />
           <Button
             variant="contained"
-            onClick={() => {
-              if (verifyRecoveryPhrase(phrase, phraseType)) {
-                setStep('passcode');
-                setError('');
-              } else {
-                setError('Invalid recovery phrase');
-              }
-            }}
-            disabled={!phrase}
+            onClick={handleLogin}
+            disabled={!phrase || loading}
           >
-            Login
+            {loading ? <CircularProgress size={20} /> : 'Login'}
           </Button>
           {error && <Typography color="error">{error}</Typography>}
         </>
@@ -65,6 +95,15 @@ export default function AuthPhraseInputOrGen() {
           >
             Generate Phrase
           </Button>
+          <Button
+            variant="contained"
+            sx={{ mt: 2 }}
+            onClick={handleSignup}
+            disabled={!phrase || loading}
+          >
+            {loading ? <CircularProgress size={20} /> : 'Sign Up'}
+          </Button>
+          {error && <Typography color="error">{error}</Typography>}
         </>
       )}
     </motion.div>

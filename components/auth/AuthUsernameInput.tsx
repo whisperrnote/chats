@@ -1,8 +1,9 @@
+'use client';
 import { useEffect } from 'react';
 import { Typography, TextField, Button, CircularProgress } from '@mui/material';
 import { motion } from 'framer-motion';
-import { useAuthFlow } from '../../store/authFlow';
-import { findUserByUsername } from '../../lib/appwrite';
+import { useAuthFlow } from '@/store/authFlow';
+import { findUserByUsername } from '@/lib/appwrite';
 
 export default function AuthUsernameInput() {
   const {
