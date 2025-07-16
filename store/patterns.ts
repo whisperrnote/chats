@@ -22,12 +22,11 @@ export const usePatternSettings = create<PatternState>()(
   persist(
     (set) => ({
       currentPattern: 'communication',
-      opacity: 20, // Increase this value (e.g., 20 for 20% opacity)
+      opacity: 100, // This is the max, but see note below
       scale: 100,
       animationEnabled: true,
-      emojiRatio: 70, // 70% emojis, 30% geometric shapes
-      density: 60, // Medium density
-      
+      emojiRatio: 70,
+      density: 60,
       setPattern: (currentPattern) => set({ currentPattern }),
       setOpacity: (opacity) => set({ opacity }),
       setScale: (scale) => set({ scale }),
@@ -40,3 +39,4 @@ export const usePatternSettings = create<PatternState>()(
     }
   )
 );
+

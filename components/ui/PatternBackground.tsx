@@ -55,9 +55,9 @@ export default function PatternBackground({ children }: { children: React.ReactN
 
   const patternItems = createPatternArray();
 
-  const outlineColor = theme.palette.mode === 'dark' 
-    ? 'rgba(224, 185, 122, 0.12)'
-    : 'rgba(124, 77, 30, 0.08)';
+  const outlineColor = theme.palette.mode === 'dark'
+    ? 'rgba(224, 185, 122, 0.35)' // was 0.12 or 0.13, now 0.35 for visibility
+    : 'rgba(124, 77, 30, 0.25)';  // was 0.08 or 0.13, now 0.25 for visibility
 
   const positions = [
     { x: 1, y: 1.5, size: 16 },
