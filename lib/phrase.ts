@@ -1,30 +1,44 @@
-import * as bip39 from 'bip39';
-import { pbkdf2Sync } from 'crypto-browserify';
 
-// Simple phrase generator/validator (replace with BIP39 in production)
-const WORD_LIST = [
-  'abandon', 'ability', 'able', 'about', 'above', 'absent', 'absorb', 'abstract',
-  'absurd', 'abuse', 'access', 'accident', 'account', 'accuse', 'achieve', 'acid',
-  'acoustic', 'acquire', 'across', 'act', 'action', 'actor', 'actress', 'actual',
-  'adapt', 'add', 'addict', 'address', 'adjust', 'admit', 'adult', 'advance',
-  'advice', 'aerobic', 'affair', 'afford', 'afraid', 'again', 'against', 'age',
-  'agent', 'agree', 'ahead', 'aim', 'air', 'airport', 'aisle', 'alarm',
-  'album', 'alcohol', 'alert', 'alien', 'all', 'alley', 'allow', 'almost',
-  // ... add more words or use actual BIP39 wordlist
-];
+// Use the official BIP39 English wordlist for production-grade mnemonics
+import bip39Wordlist from 'bip39/wordlists/english.json';
 
-export function generateRecoveryPhrase(words: 12 | 24 = 12): string {
-  const arr = [];
-  for (let i = 0; i < words; i++) {
-    arr.push(WORD_LIST[Math.floor(Math.random() * WORD_LIST.length)]);
+// Helper to get a cryptographically secure random integer
+function getRandomInt(max: number): number {
+  if (typeof window !== 'undefined' && window.crypto?.getRandomValues) {
+    const array = new Uint32Array(1);
+    window.crypto.getRandomValues(array);
+    return array[0] % max;
+  } else if (typeof require !== 'undefined') {
+    // Node.js fallback
+    const crypto = require('crypto');
+    return crypto.randomBytes(4).readUInt32BE(0) % max;
+  } else {
+    // Fallback (not cryptographically secure)
+    return Math.floor(Math.random() * max);
   }
-  return arr.join(' ');
 }
 
+// Generate a BIP39-like mnemonic phrase (12 or 24 words, unique, random, not always starting with 'a')
+export function generateRecoveryPhrase(words: 12 | 24 = 12): string {
+  const wordlist: string[] = bip39Wordlist;
+  const phrase: string[] = [];
+  const used = new Set<number>();
+  while (phrase.length < words) {
+    const idx = getRandomInt(wordlist.length);
+    // Avoid duplicates for better UX (not required by BIP39, but improves randomness feel)
+    if (!used.has(idx)) {
+      phrase.push(wordlist[idx]);
+      used.add(idx);
+    }
+  }
+  return phrase.join(' ');
+}
+
+// Verify a mnemonic phrase (basic check: correct word count and all words in wordlist)
 export function verifyRecoveryPhrase(phrase: string, words: 12 | 24): boolean {
   if (!phrase) return false;
   const arr = phrase.trim().split(/\s+/);
-  return arr.length === words && arr.every(w => WORD_LIST.includes(w));
+  return arr.length === words && arr.every(w => (bip39Wordlist as string[]).includes(w));
 }
 
 export async function deriveEncryptionKey(mnemonic: string, salt: string): Promise<string> {
