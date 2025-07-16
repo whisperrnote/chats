@@ -1,5 +1,5 @@
 'use client';
-import { Box, List, ListItem, ListItemAvatar, Avatar, ListItemText, Badge, InputBase, Fab, Tooltip } from '@mui/material';
+import { Box, List, ListItem, ListItemAvatar, Avatar, ListItemText, Badge, InputBase, Fab, Tooltip, Skeleton } from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
 import SmartToyIcon from '@mui/icons-material/SmartToy';
 import { useChats } from '@/store/chats';
@@ -7,14 +7,29 @@ import { useAppLayout } from '@/store/layout';
 import { useState } from 'react';
 import { Rnd } from 'react-rnd';
 
+function ChatListSkeleton() {
+  return (
+    <Box sx={{ px: 2, py: 1 }}>
+      {[...Array(6)].map((_, i) => (
+        <Box key={i} sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
+          <Skeleton variant="circular" width={40} height={40} animation="wave" />
+          <Box sx={{ ml: 2, flex: 1 }}>
+            <Skeleton variant="text" width="60%" height={18} animation="wave" />
+            <Skeleton variant="text" width="40%" height={14} animation="wave" />
+          </Box>
+        </Box>
+      ))}
+    </Box>
+  );
+}
+
 export default function ChatList() {
   const { chats, selectChat, selectedChatId, search, setSearch } = useChats();
   const { setShowExtensions } = useAppLayout();
   const [showAiPanel, setShowAiPanel] = useState(false);
 
   const handleAiClick = () => {
-    setShowExtensions(true); // Open the secondary sidebar for AI chat
-    // Optionally, set a state to indicate AI panel is active
+    setShowExtensions(true);
   };
 
   return (
@@ -42,24 +57,28 @@ export default function ChatList() {
           />
         </Box>
         <List sx={{ flex: 1, overflowY: 'auto' }}>
-          {chats.map(chat => (
-            <ListItem
-              key={chat.chatId}
-              selected={chat.chatId === selectedChatId}
-              onClick={() => selectChat(chat.chatId)}
-              button
-            >
-              <ListItemAvatar>
-                <Badge color="primary" badgeContent={chat.unreadCount}>
-                  <Avatar src={chat.avatarUrl || undefined}>{chat.title?.[0]}</Avatar>
-                </Badge>
-              </ListItemAvatar>
-              <ListItemText
-                primary={chat.title}
-                secondary={chat.lastMessagePreview}
-              />
-            </ListItem>
-          ))}
+          {chats.length === 0 ? (
+            <ChatListSkeleton />
+          ) : (
+            chats.map(chat => (
+              <ListItem
+                key={chat.chatId}
+                selected={chat.chatId === selectedChatId}
+                onClick={() => selectChat(chat.chatId)}
+                button
+              >
+                <ListItemAvatar>
+                  <Badge color="primary" badgeContent={chat.unreadCount}>
+                    <Avatar src={chat.avatarUrl || undefined}>{chat.title?.[0]}</Avatar>
+                  </Badge>
+                </ListItemAvatar>
+                <ListItemText
+                  primary={chat.title}
+                  secondary={chat.lastMessagePreview}
+                />
+              </ListItem>
+            ))
+          )}
         </List>
         {/* Floating Action Buttons */}
         <Box sx={{ position: 'absolute', bottom: 24, right: 24, display: 'flex', flexDirection: 'column', gap: 2, zIndex: 1201 }}>
