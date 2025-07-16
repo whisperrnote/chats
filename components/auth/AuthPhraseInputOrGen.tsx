@@ -2,11 +2,16 @@
 import { Typography, TextField, Button, ToggleButtonGroup, ToggleButton, CircularProgress } from '@mui/material';
 import { motion } from 'framer-motion';
 import { useAuthFlow } from '@/store/authFlow';
-import { generateRecoveryPhrase } from '@/lib/phrase';
-import { loginEmailPassword, signupEmailPassword } from '@/lib/appwrite';
+import { generateRecoveryPhrase, deriveEncryptionKey } from '@/lib/phrase';
+import {
+  signupEmailPassword,
+  loginEmailPassword,
+  findUserByUsername,
+  createUserProfile,
+  usernameToEmail,
+} from '@/lib/appwrite';
 import { useState } from 'react';
 
-// Ensure phraseType is typed as 12 | 24 | null everywhere it's used
 export default function AuthPhraseInputOrGen() {
   const {
     usernameExists,
@@ -29,13 +34,63 @@ export default function AuthPhraseInputOrGen() {
 
   const [loading, setLoading] = useState(false);
 
-  const getEmail = (username: string) => `${username}@whisperrchat.local`;
+  // Helper: derive public/private keypair and encrypt private key (stub for now)
+  async function generateKeysAndEncrypt(phrase: string, username: string) {
+    // In production, use libsodium or similar for keypair generation
+    // Here, just use the encryption key as both public and encrypted private key for demo
+    const encryptionKey = await deriveEncryptionKey(phrase, username);
+    return {
+      publicKey: encryptionKey,
+      encryptedPrivateKey: encryptionKey,
+    };
+  }
 
+  // Signup: create Appwrite account, then user profile in DB
+  const handleSignup = async () => {
+    setLoading(true);
+    setError('');
+    try {
+      // Check if username already exists
+      const user = await findUserByUsername(username);
+      if (user) {
+        setError('Username already exists. Please choose another.');
+        setLoading(false);
+        return;
+      }
+      // Create Appwrite account and session
+      const email = usernameToEmail(username);
+      const session = await signupEmailPassword(email, phrase, username);
+      // Generate keys and encrypt private key
+      const { publicKey, encryptedPrivateKey } = await generateKeysAndEncrypt(phrase, username);
+      // Create user profile in DB
+      await createUserProfile({
+        userId: session.userId || session.user.$id,
+        username,
+        displayName: username,
+        email,
+        publicKey,
+        encryptedPrivateKey,
+      });
+      setStep('done');
+    } catch (e: any) {
+      setError('Failed to create account. Username may be taken or phrase invalid.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Login: create session
   const handleLogin = async () => {
     setLoading(true);
     setError('');
     try {
-      await loginEmailPassword(getEmail(username), phrase);
+      const user = await findUserByUsername(username);
+      if (!user) {
+        setError('Username does not exist.');
+        setLoading(false);
+        return;
+      }
+      await loginEmailPassword(usernameToEmail(username), phrase);
       setStep('done');
     } catch (e: any) {
       setError('Invalid recovery phrase or account.');
@@ -44,20 +99,6 @@ export default function AuthPhraseInputOrGen() {
     }
   };
 
-  const handleSignup = async () => {
-    setLoading(true);
-    setError('');
-    try {
-      await signupEmailPassword(getEmail(username), phrase, username);
-      setStep('done');
-    } catch (e: any) {
-      setError('Failed to create account. Username may be taken.');
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  // Fix: Cast value to 12 | 24 | null
   const handlePhraseTypeChange = (_: React.MouseEvent<HTMLElement>, value: number | null) => {
     if (value === 12 || value === 24) {
       setPhraseType(value);

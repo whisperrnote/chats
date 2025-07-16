@@ -1,5 +1,13 @@
 import {
-  Client, Account, Databases, Storage, Avatars, ID, Query, Permission, Role as AppwriteRole,
+  Client,
+  Account,
+  Databases,
+  Storage,
+  Avatars,
+  ID,
+  Query,
+  Permission,
+  Role as AppwriteRole,
   AuthenticationFactor
 } from 'appwrite';
 import type * as Types from '../types/appwrite.d';
@@ -7,8 +15,8 @@ import type * as Types from '../types/appwrite.d';
 // --- Client/Service Initialization ---
 const client = new Client();
 client
-  .setEndpoint(process.env.NEXT_PUBLIC_APPWRITE_ENDPOINT!)
-  .setProject(process.env.NEXT_PUBLIC_APPWRITE_PROJECT_ID!);
+  .setEndpoint(process.env.NEXT_PUBLIC_APPWRITE_ENDPOINT as string)
+  .setProject(process.env.NEXT_PUBLIC_APPWRITE_PROJECT_ID as string);
 
 export const account = new Account(client);
 export const databases = new Databases(client);
@@ -18,34 +26,52 @@ export const avatars = new Avatars(client);
 export { ID, Query, Permission, AppwriteRole };
 
 // --- Database/Collection/Bucket IDs ---
-export const DB_CORE = process.env.NEXT_PUBLIC_APPWRITE_DB_CORE_ID!;
-export const DB_EXTENSIONS = process.env.NEXT_PUBLIC_APPWRITE_DB_EXTENSIONS_ID!;
+export const DB_CORE = process.env.NEXT_PUBLIC_APPWRITE_DB_CORE_ID as string;
+export const DB_EXTENSIONS = process.env.NEXT_PUBLIC_APPWRITE_DB_EXTENSIONS_ID as string;
 export const COLLECTIONS = {
-  USERS: process.env.NEXT_PUBLIC_APPWRITE_COLLECTION_USERS!,
-  CHATS: process.env.NEXT_PUBLIC_APPWRITE_COLLECTION_CHATS!,
-  CHATMEMBERS: process.env.NEXT_PUBLIC_APPWRITE_COLLECTION_CHATMEMBERS!,
-  MESSAGES: process.env.NEXT_PUBLIC_APPWRITE_COLLECTION_MESSAGES!,
-  CONTACTS: process.env.NEXT_PUBLIC_APPWRITE_COLLECTION_CONTACTS!,
-  DEVICES: process.env.NEXT_PUBLIC_APPWRITE_COLLECTION_DEVICES!,
-  USERNAMES: process.env.NEXT_PUBLIC_APPWRITE_COLLECTION_USERNAMES!,
+  USERS: process.env.NEXT_PUBLIC_APPWRITE_COLLECTION_USERS as string,
+  CHATS: process.env.NEXT_PUBLIC_APPWRITE_COLLECTION_CHATS as string,
+  CHATMEMBERS: process.env.NEXT_PUBLIC_APPWRITE_COLLECTION_CHATMEMBERS as string,
+  MESSAGES: process.env.NEXT_PUBLIC_APPWRITE_COLLECTION_MESSAGES as string,
+  CONTACTS: process.env.NEXT_PUBLIC_APPWRITE_COLLECTION_CONTACTS as string,
+  DEVICES: process.env.NEXT_PUBLIC_APPWRITE_COLLECTION_DEVICES as string,
+  USERNAMES: process.env.NEXT_PUBLIC_APPWRITE_COLLECTION_USERNAMES as string,
   // extensions
-  BOTS: process.env.NEXT_PUBLIC_APPWRITE_COLLECTION_BOTS!,
-  WEB3WALLETS: process.env.NEXT_PUBLIC_APPWRITE_COLLECTION_WEB3WALLETS!,
-  INTEGRATIONS: process.env.NEXT_PUBLIC_APPWRITE_COLLECTION_INTEGRATIONS!,
-  EXTENSIONSETTINGS: process.env.NEXT_PUBLIC_APPWRITE_COLLECTION_EXTENSIONSETTINGS!,
+  BOTS: process.env.NEXT_PUBLIC_APPWRITE_COLLECTION_BOTS as string,
+  WEB3WALLETS: process.env.NEXT_PUBLIC_APPWRITE_COLLECTION_WEB3WALLETS as string,
+  INTEGRATIONS: process.env.NEXT_PUBLIC_APPWRITE_COLLECTION_INTEGRATIONS as string,
+  EXTENSIONSETTINGS: process.env.NEXT_PUBLIC_APPWRITE_COLLECTION_EXTENSIONSETTINGS as string,
 } as const;
 export const BUCKETS = {
-  USER_AVATARS: process.env.NEXT_PUBLIC_APPWRITE_BUCKET_USER_AVATARS!,
-  CHAT_MEDIA: process.env.NEXT_PUBLIC_APPWRITE_BUCKET_CHAT_MEDIA!,
-  BACKGROUNDS: process.env.NEXT_PUBLIC_APPWRITE_BUCKET_BACKGROUNDS!,
-  EXTENSION_ASSETS: process.env.NEXT_PUBLIC_APPWRITE_BUCKET_EXTENSION_ASSETS!,
+  USER_AVATARS: process.env.NEXT_PUBLIC_APPWRITE_BUCKET_USER_AVATARS as string,
+  CHAT_MEDIA: process.env.NEXT_PUBLIC_APPWRITE_BUCKET_CHAT_MEDIA as string,
+  BACKGROUNDS: process.env.NEXT_PUBLIC_APPWRITE_BUCKET_BACKGROUNDS as string,
+  EXTENSION_ASSETS: process.env.NEXT_PUBLIC_APPWRITE_BUCKET_EXTENSION_ASSETS as string,
 } as const;
+
+// --- Utility: Canonize Username ---
+export function canonizeUsername(username?: string): string | undefined {
+  if (!username || typeof username !== 'string') return undefined;
+  return username.trim().replace(/[^a-zA-Z0-9_]/g, '_').replace(/_+/g, '_').toLowerCase();
+}
+
+// Use canonical username as email for Appwrite auth
+export function usernameToEmail(username: string): string {
+  return `${canonizeUsername(username)}@users.noreply.whisperrchat.space`;
+}
 
 // --- Auth & Account Methods ---
 
-export async function signupEmailPassword(email: string, password: string, name: string, userId: string = ID.unique()) {
-  return account.create(userId, email, password, name);
+export async function signupEmailPassword(
+  email: string,
+  password: string,
+  name: string,
+  userId: string = ID.unique()
+) {
+  await account.create(userId, email, password, name);
+  return account.createEmailPasswordSession(email, password);
 }
+
 export async function loginEmailPassword(email: string, password: string) {
   return account.createEmailPasswordSession(email, password);
 }
@@ -101,13 +127,56 @@ export async function setMfaEnabled(enabled: boolean) {
   return account.updateMFA(enabled);
 }
 export async function createMfaChallenge(factor: 'totp' | 'email' | 'recoverycode') {
-  return account.createMfaChallenge(AuthenticationFactor.Totp);
+  // NOTE: The parameter passed to `createMfaChallenge` should match the AuthenticationFactor enum
+  switch (factor) {
+    case 'totp':
+      return account.createMfaChallenge(AuthenticationFactor.Totp);
+    case 'email':
+      return account.createMfaChallenge(AuthenticationFactor.Email);
+    case 'recoverycode':
+      return account.createMfaChallenge(AuthenticationFactor.Recoverycode);
+    default:
+      throw new Error('Invalid MFA factor');
+  }
 }
 export async function completeMfaChallenge(challengeId: string, code: string) {
   return account.updateMfaChallenge(challengeId, code);
 }
 
 // --- USERS ---
+
+export async function createUserProfile({
+  userId,
+  username,
+  displayName,
+  email,
+  publicKey,
+  encryptedPrivateKey,
+}: {
+  userId: string;
+  username: string;
+  displayName: string;
+  email: string;
+  publicKey: string;
+  encryptedPrivateKey: string;
+}) {
+  const now = new Date().toISOString();
+  return databases.createDocument(DB_CORE, COLLECTIONS.USERS, userId, {
+    userId,
+    username: canonizeUsername(username),
+    displayName,
+    email,
+    publicKey,
+    encryptedPrivateKey,
+    createdAt: now,
+    lastSeen: now,
+    status: 'offline',
+    credibilityTier: 'bronze',
+    credibilityScore: 100,
+    deleted: false,
+  });
+}
+
 export async function createUser(data: Partial<Types.Users>, userId: string = ID.unique()) {
   return databases.createDocument(DB_CORE, COLLECTIONS.USERS, userId, data);
 }
@@ -123,8 +192,11 @@ export async function deleteUser(userId: string) {
 export async function listUsers(queries: any[] = []) {
   return databases.listDocuments(DB_CORE, COLLECTIONS.USERS, queries);
 }
+
+// --- Find user by username (canonical) ---
 export async function findUserByUsername(username: string) {
   const canon = canonizeUsername(username);
+  if (!canon) return null;
   const res = await databases.listDocuments(DB_CORE, COLLECTIONS.USERS, [Query.equal('username', canon)]);
   return res.documents[0] || null;
 }
@@ -136,6 +208,7 @@ export async function findUserByEmail(email: string) {
 // --- USERNAMES ---
 export async function getUsernameDoc(username: string) {
   const canon = canonizeUsername(username);
+  if (!canon) return null;
   const res = await databases.listDocuments(DB_CORE, COLLECTIONS.USERNAMES, [Query.equal('username', canon)]);
   return res.documents[0] || null;
 }
@@ -263,12 +336,6 @@ export async function listExtensionDocs(collection: keyof typeof COLLECTIONS, qu
   return databases.listDocuments(DB_EXTENSIONS, COLLECTIONS[collection], queries);
 }
 
-// --- Utility: Canonize Username ---
-export function canonizeUsername(username?: string): string | undefined {
-  if (!username || typeof username !== 'string') return undefined;
-  return username.trim().replace(/[^a-zA-Z0-9_]/g, '_').replace(/_+/g, '_').toLowerCase();
-}
-
 // --- Utility: Get Document (Generic) ---
 export async function getDocument<T>(dbId: string, collectionId: string, docId: string): Promise<T> {
   return databases.getDocument(dbId, collectionId, docId) as Promise<T>;
@@ -311,6 +378,7 @@ export async function isAuthenticated(): Promise<boolean> {
 export async function getCurrentUserId(): Promise<string | null> {
   try {
     const user = await getCurrentAccount();
+    // @ts-ignore -- Appwrite get() returns a User object with $id
     return user.$id || null;
   } catch {
     return null;
@@ -335,6 +403,7 @@ export async function getMessagesForChat(chatId: string, limit = 50) {
 
 // --- Real-time Subscriptions ---
 export function subscribeToChat(chatId: string, callback: (payload: any) => void) {
+  // Note: .subscribe() is available on the 'client' only for realtime if enabled in Appwrite SDK
   return client.subscribe(`databases.${DB_CORE}.collections.${COLLECTIONS.MESSAGES}.documents`, callback);
 }
 
@@ -345,8 +414,8 @@ export function subscribeToUserChats(userId: string, callback: (payload: any) =>
 // --- User Profile Management ---
 export async function getCurrentUserProfile(): Promise<Types.Users | null> {
   try {
-    const account = await getCurrentAccount();
-    const profile = await getUser(account.$id);
+    const accountData = await getCurrentAccount();
+    const profile = await getUser(accountData.$id);
     return profile;
   } catch (error) {
     console.error('Failed to get user profile:', error);

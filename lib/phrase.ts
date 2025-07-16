@@ -1,51 +1,54 @@
+// Professional BIP39 mnemonic utilities using the official bip39 package
 
-// Use the official BIP39 English wordlist for production-grade mnemonics
-import bip39Wordlist from 'bip39/wordlists/english.json';
+import * as bip39 from 'bip39';
+import { pbkdf2Sync } from 'crypto';
 
-// Helper to get a cryptographically secure random integer
-function getRandomInt(max: number): number {
-  if (typeof window !== 'undefined' && window.crypto?.getRandomValues) {
-    const array = new Uint32Array(1);
-    window.crypto.getRandomValues(array);
-    return array[0] % max;
-  } else if (typeof require !== 'undefined') {
-    // Node.js fallback
-    const crypto = require('crypto');
-    return crypto.randomBytes(4).readUInt32BE(0) % max;
-  } else {
-    // Fallback (not cryptographically secure)
-    return Math.floor(Math.random() * max);
-  }
-}
-
-// Generate a BIP39-like mnemonic phrase (12 or 24 words, unique, random, not always starting with 'a')
+/**
+ * Generate a BIP39-compliant mnemonic phrase (12 or 24 words)
+ * @param words The number of words in the mnemonic (12 or 24)
+ * @returns The mnemonic phrase as a string
+ */
 export function generateRecoveryPhrase(words: 12 | 24 = 12): string {
-  const wordlist: string[] = bip39Wordlist;
-  const phrase: string[] = [];
-  const used = new Set<number>();
-  while (phrase.length < words) {
-    const idx = getRandomInt(wordlist.length);
-    // Avoid duplicates for better UX (not required by BIP39, but improves randomness feel)
-    if (!used.has(idx)) {
-      phrase.push(wordlist[idx]);
-      used.add(idx);
-    }
-  }
-  return phrase.join(' ');
+  const strength = words === 12 ? 128 : 256;
+  return bip39.generateMnemonic(strength);
 }
 
-// Verify a mnemonic phrase (basic check: correct word count and all words in wordlist)
+/**
+ * Validate a mnemonic phrase (BIP39 standard)
+ * @param phrase The mnemonic phrase to verify
+ * @param words The expected number of words (12 or 24)
+ * @returns True if valid, false otherwise
+ */
 export function verifyRecoveryPhrase(phrase: string, words: 12 | 24): boolean {
   if (!phrase) return false;
   const arr = phrase.trim().split(/\s+/);
-  return arr.length === words && arr.every(w => (bip39Wordlist as string[]).includes(w));
+  if (arr.length !== words) return false;
+  return bip39.validateMnemonic(phrase);
 }
 
-export async function deriveEncryptionKey(mnemonic: string, salt: string): Promise<string> {
-  // Simple key derivation (use proper PBKDF2 in production)
-  const encoder = new TextEncoder();
-  const data = encoder.encode(mnemonic + salt);
-  const hashBuffer = await crypto.subtle.digest('SHA-256', data);
-  const hashArray = Array.from(new Uint8Array(hashBuffer));
-  return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+/**
+ * Derive a key from a BIP39 mnemonic and salt using PBKDF2 (standard SCRYPT alternative)
+ * @param mnemonic The BIP39 mnemonic phrase
+ * @param salt The salt to use for derivation
+ * @returns The derived key as a hex string
+ */
+export async function deriveEncryptionKey(
+  mnemonic: string,
+  salt: string
+): Promise<string> {
+  // Use PBKDF2 with 2048 iterations, SHA512, 64 bytes output (BIP39 standard)
+  return new Promise((resolve, reject) => {
+    try {
+      const key = pbkdf2Sync(
+        mnemonic.normalize('NFKD'),
+        ('mnemonic' + salt).normalize('NFKD'),
+        2048,
+        64,
+        'sha512'
+      );
+      resolve(key.toString('hex'));
+    } catch (e) {
+      reject(e);
+    }
+  });
 }
