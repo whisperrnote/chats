@@ -1,43 +1,43 @@
 'use client';
+import React, { useEffect, useState } from 'react';
 import Container from '@mui/material/Container';
 import { motion } from 'framer-motion';
-import { useAuthFlow } from '../../store/authFlow';
-import AuthUsernameInput from '../../components/auth/AuthUsernameInput';
-import AuthPhraseInputOrGen from '../../components/auth/AuthPhraseInputOrGen';
-import AuthShowPhrase from '../../components/auth/AuthShowPhrase';
-import AuthPasscodeInput from '../../components/auth/AuthPasscodeInput';
-import AuthDone from '../../components/auth/AuthDone';
+import { useAuthFlow } from '@/store/authFlow';
+import { verifyRecoveryPhrase, generateRecoveryPhrase } from '@/lib/phrase';
+import { Typography, TextField, CircularProgress, Button, ToggleButtonGroup, ToggleButton, Box, Stack } from '@mui/material';
 
 export default function AuthPage() {
-  const { step } = useAuthFlow();
+  // For demonstration, assuming these states come from the auth flow.
+  // You may want to move these to your store and update useAuthFlow accordingly.
+  const { step, setStep } = useAuthFlow();
+  const [username, setUsername] = useState('');
+  const [usernameExists, setUsernameExists] = useState<null | boolean>(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
+  const [phrase, setPhrase] = useState('');
+  const [phraseType, setPhraseType] = useState<12 | 24>(12);
+  const [passcode, setPasscode] = useState('');
 
-  const panelVariants = {
-    initial: { opacity: 0, y: 40 },
-    animate: { opacity: 1, y: 0, transition: { type: 'spring', duration: 0.6 } }
-  };
-
-  return (
-    <Container maxWidth="sm" sx={{ py: 8 }}>
-      <motion.div
-        variants={panelVariants}
-        initial="initial"
-        animate="animate"
-        style={{ background: 'var(--color-surface)', borderRadius: 16, boxShadow: '0 4px 32px #0002', padding: 32 }}
-      >
-        {step === 'username' && <AuthUsernameInput />}
-        {step === 'phrase' && <AuthPhraseInputOrGen />}
-        {step === 'showPhrase' && <AuthShowPhrase />}
-        {step === 'passcode' && <AuthPasscodeInput />}
-        {step === 'done' && <AuthDone />}
-      </motion.div>
-    </Container>
-  );
-}
-        setLoading(false);
+  useEffect(() => {
+    if (!username) {
+      setUsernameExists(null);
+      setError('');
+      setLoading(false);
+      return;
+    }
+    setLoading(true);
+    setError('');
+    const timer = setTimeout(() => {
+      // Replace this mock check with your actual username verification logic
+      if (username === 'existingUser') {
+        setUsernameExists(true);
+      } else {
+        setUsernameExists(false);
       }
+      setLoading(false);
     }, 500);
     return () => clearTimeout(timer);
-  }, [username, setUsernameExists, setLoading, setError]);
+  }, [username]);
 
   // Step 1: Username input
   const renderUsernameInput = () => (

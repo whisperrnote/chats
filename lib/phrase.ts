@@ -1,5 +1,4 @@
 // Simple phrase generator/validator (replace with secure implementation in production)
-import { randomBytes } from 'crypto';
 
 const WORD_LIST = [
   // ...a list of BIP39 words or similar...
