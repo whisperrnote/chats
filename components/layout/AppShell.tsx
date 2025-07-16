@@ -1,11 +1,11 @@
 import { Box } from '@mui/material';
 import Sidebar from '../app/Sidebar';
-import ChatList from '../app/ChatList';
-import ChatWindow from '../app/ChatWindow';
-import ProfilePanel from '../app/ProfilePanel';
-import ExtensionPanel from '../app/ExtensionPanel';
-import ResponsiveDrawer from '../app/ResponsiveDrawer';
-import { useAppLayout } from '../../store/layout';
+import ChatList from '@/components/app/ChatList';
+import ChatWindow from '@/components/app/ChatWindow';
+import ProfilePanel from '@/components/app/ProfilePanel';
+import ExtensionPanel from '@/components/app/ExtensionPanel';
+import ResponsiveDrawer from '@/components/app/ResponsiveDrawer';
+import { useAppLayout } from '@/store/layout';
 
 export default function AppShell() {
   const { showProfile, showExtensions } = useAppLayout();
