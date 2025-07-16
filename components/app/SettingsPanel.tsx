@@ -2,17 +2,26 @@
 import { Box, Typography, Divider, Switch, FormControlLabel, Button, Stack } from '@mui/material';
 import { Rnd } from 'react-rnd';
 import ThemeSwitcher from '@/components/ui/ThemeSwitcher';
+import { useEffect, useState } from 'react';
 
 export default function SettingsPanel() {
-  // Add state hooks for toggles as needed
-  return (
-    <Rnd
-      default={{
+  // SSR-safe default for Rnd
+  const [rndDefault, setRndDefault] = useState({ x: 100, y: 160, width: 400, height: 540 });
+
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      setRndDefault({
         x: window.innerWidth - 400,
         y: 160,
         width: 400,
         height: 540,
-      }}
+      });
+    }
+  }, []);
+
+  return (
+    <Rnd
+      default={rndDefault}
       minWidth={300}
       minHeight={340}
       bounds="window"

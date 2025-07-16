@@ -4,7 +4,7 @@ import AddIcon from '@mui/icons-material/Add';
 import SmartToyIcon from '@mui/icons-material/SmartToy';
 import { useChats } from '@/store/chats';
 import { useAppLayout } from '@/store/layout';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Rnd } from 'react-rnd';
 
 function ChatListSkeleton() {
@@ -28,18 +28,27 @@ export default function ChatList() {
   const { setShowExtensions } = useAppLayout();
   const [showAiPanel, setShowAiPanel] = useState(false);
 
+  // SSR-safe default for Rnd
+  const [rndDefault, setRndDefault] = useState({ x: 0, y: 0, width: 320, height: 600 });
+
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      setRndDefault({
+        x: 0,
+        y: 0,
+        width: 320,
+        height: window.innerHeight,
+      });
+    }
+  }, []);
+
   const handleAiClick = () => {
     setShowExtensions(true);
   };
 
   return (
     <Rnd
-      default={{
-        x: 0,
-        y: 0,
-        width: 320,
-        height: window.innerHeight,
-      }}
+      default={rndDefault}
       minWidth={220}
       minHeight={320}
       bounds="window"

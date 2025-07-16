@@ -3,18 +3,28 @@ import { Box, Typography, Avatar, Divider, Button, Stack } from '@mui/material';
 import { useUser } from '@/store/user';
 import { Rnd } from 'react-rnd';
 import ThemeSwitcher from '@/components/ui/ThemeSwitcher';
+import { useEffect, useState } from 'react';
 
 export default function ProfilePanel() {
   const { user } = useUser();
 
-  return (
-    <Rnd
-      default={{
+  // SSR-safe default for Rnd
+  const [rndDefault, setRndDefault] = useState({ x: 100, y: 80, width: 340, height: 520 });
+
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      setRndDefault({
         x: window.innerWidth - 340,
         y: 80,
         width: 340,
         height: 520,
-      }}
+      });
+    }
+  }, []);
+
+  return (
+    <Rnd
+      default={rndDefault}
       minWidth={280}
       minHeight={320}
       bounds="window"

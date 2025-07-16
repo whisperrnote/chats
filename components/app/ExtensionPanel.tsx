@@ -2,7 +2,7 @@
 import { Box, Typography, Divider, List, ListItem, ListItemText, Paper, TextField, IconButton } from '@mui/material';
 import { Rnd } from 'react-rnd';
 import SendIcon from '@mui/icons-material/Send';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 
 const demoExtensions = [
   { name: 'Weather Bot', desc: 'Get weather updates in chat.' },
@@ -13,6 +13,20 @@ const demoExtensions = [
 export default function ExtensionPanel() {
   const [aiMessages, setAiMessages] = useState<{ sender: 'user' | 'ai'; text: string }[]>([]);
   const [input, setInput] = useState('');
+
+  // SSR-safe default for Rnd
+  const [rndDefault, setRndDefault] = useState({ x: 100, y: 120, width: 380, height: 480 });
+
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      setRndDefault({
+        x: window.innerWidth - 380,
+        y: 120,
+        width: 380,
+        height: 480,
+      });
+    }
+  }, []);
 
   const handleSend = () => {
     if (!input.trim()) return;
@@ -26,12 +40,7 @@ export default function ExtensionPanel() {
 
   return (
     <Rnd
-      default={{
-        x: window.innerWidth - 380,
-        y: 120,
-        width: 380,
-        height: 480,
-      }}
+      default={rndDefault}
       minWidth={280}
       minHeight={320}
       bounds="window"
