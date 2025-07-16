@@ -1,5 +1,5 @@
 'use client';
-import { AppBar, Toolbar, Typography, Box, IconButton } from '@mui/material';
+import { AppBar, Toolbar, Box } from '@mui/material';
 import { styled } from '@mui/material/styles';
 import { useRouter } from 'next/navigation';
 import { motion } from 'framer-motion';
@@ -29,9 +29,19 @@ export default function Topbar() {
       transition={{ type: 'spring', stiffness: 100, damping: 20 }}
     >
       <GlassAppBar elevation={0}>
-        <Toolbar sx={{ justifyContent: 'space-between', px: 4 }}>
+        <Toolbar
+          sx={{
+            justifyContent: 'space-between',
+            px: { xs: 2, md: 4 },
+            minHeight: { xs: 56, md: 64 },
+          }}
+        >
           <Logo />
-          <Navigation />
+          {/* Navigation always visible, but can be styled for mobile */}
+          <Box sx={{ flex: 1, justifyContent: 'center', display: 'flex' }}>
+            <Navigation />
+          </Box>
+          {/* Actions */}
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
             <ThemeSwitcher />
             <ContinueButton onClick={() => router.push('/auth')} />

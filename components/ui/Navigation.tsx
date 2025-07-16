@@ -15,7 +15,7 @@ const NavButton = styled(Button)(({ theme }) => ({
 
 export default function Navigation() {
   return (
-    <Box sx={{ display: 'flex', gap: 2 }}>
+    <Box sx={{ display: { xs: 'none', md: 'flex' }, gap: 2 }}>
       <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
         <NavButton>Features</NavButton>
       </motion.div>
