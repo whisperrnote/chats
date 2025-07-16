@@ -2,10 +2,11 @@
 import { Typography, TextField, Button, ToggleButtonGroup, ToggleButton, CircularProgress } from '@mui/material';
 import { motion } from 'framer-motion';
 import { useAuthFlow } from '@/store/authFlow';
-import { generateRecoveryPhrase, verifyRecoveryPhrase } from '@/lib/phrase';
+import { generateRecoveryPhrase } from '@/lib/phrase';
 import { loginEmailPassword, signupEmailPassword } from '@/lib/appwrite';
 import { useState } from 'react';
 
+// Ensure phraseType is typed as 12 | 24 | null everywhere it's used
 export default function AuthPhraseInputOrGen() {
   const {
     usernameExists,
@@ -14,14 +15,22 @@ export default function AuthPhraseInputOrGen() {
     phrase, setPhrase,
     setStep,
     error, setError
-  } = useAuthFlow();
+  } = useAuthFlow() as {
+    usernameExists: boolean;
+    username: string;
+    phraseType: 12 | 24 | null;
+    setPhraseType: (val: 12 | 24 | null) => void;
+    phrase: string;
+    setPhrase: (val: string) => void;
+    setStep: (val: string) => void;
+    error: string;
+    setError: (val: string) => void;
+  };
 
   const [loading, setLoading] = useState(false);
 
-  // Helper to create a pseudo-email from username
   const getEmail = (username: string) => `${username}@whisperrchat.local`;
 
-  // Login handler
   const handleLogin = async () => {
     setLoading(true);
     setError('');
@@ -35,7 +44,6 @@ export default function AuthPhraseInputOrGen() {
     }
   };
 
-  // Signup handler
   const handleSignup = async () => {
     setLoading(true);
     setError('');
@@ -46,6 +54,15 @@ export default function AuthPhraseInputOrGen() {
       setError('Failed to create account. Username may be taken.');
     } finally {
       setLoading(false);
+    }
+  };
+
+  // Fix: Cast value to 12 | 24 | null
+  const handlePhraseTypeChange = (_: React.MouseEvent<HTMLElement>, value: number | null) => {
+    if (value === 12 || value === 24) {
+      setPhraseType(value);
+    } else {
+      setPhraseType(null);
     }
   };
 
@@ -78,7 +95,7 @@ export default function AuthPhraseInputOrGen() {
           <ToggleButtonGroup
             value={phraseType}
             exclusive
-            onChange={(_, v) => setPhraseType(v)}
+            onChange={handlePhraseTypeChange}
             sx={{ mb: 2 }}
           >
             <ToggleButton value={12}>12 words</ToggleButton>
@@ -87,22 +104,26 @@ export default function AuthPhraseInputOrGen() {
           <Button
             variant="contained"
             onClick={() => {
-              const newPhrase = generateRecoveryPhrase(phraseType);
-              setPhrase(newPhrase);
-              setStep('showPhrase');
+              if (phraseType === 12 || phraseType === 24) {
+                const newPhrase = generateRecoveryPhrase(phraseType);
+                setPhrase(newPhrase);
+                setStep('showPhrase');
+              }
             }}
             disabled={!phraseType}
           >
             Generate Phrase
           </Button>
-          <Button
-            variant="contained"
-            sx={{ mt: 2 }}
-            onClick={handleSignup}
-            disabled={!phrase || loading}
-          >
-            {loading ? <CircularProgress size={20} /> : 'Sign Up'}
-          </Button>
+          {phrase && (
+            <Button
+              variant="contained"
+              sx={{ mt: 2 }}
+              onClick={handleSignup}
+              disabled={!phrase || loading}
+            >
+              {loading ? <CircularProgress size={20} /> : 'Sign Up'}
+            </Button>
+          )}
           {error && <Typography color="error">{error}</Typography>}
         </>
       )}

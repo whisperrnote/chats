@@ -1,6 +1,7 @@
+'use client';
 import { Typography, Box, Button } from '@mui/material';
 import { motion } from 'framer-motion';
-import { useAuthFlow } from '../../store/authFlow';
+import { useAuthFlow } from '@/store/authFlow';
 
 export default function AuthShowPhrase() {
   const { phrase, setStep } = useAuthFlow();

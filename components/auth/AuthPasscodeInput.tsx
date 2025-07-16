@@ -1,6 +1,7 @@
+'use client';
 import { Typography, TextField, Button, Stack } from '@mui/material';
 import { motion } from 'framer-motion';
-import { useAuthFlow } from '../../store/authFlow';
+import { useAuthFlow } from '@/store/authFlow';
 
 export default function AuthPasscodeInput() {
   const { passcode, setPasscode, setStep } = useAuthFlow();

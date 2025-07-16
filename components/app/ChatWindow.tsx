@@ -1,23 +1,40 @@
+'use client';
+import { useEffect, useState } from 'react';
 import { Box, Typography } from '@mui/material';
-import MessageList from './MessageList';
-import MessageInput from './MessageInput';
-import { useChats } from '../../store/chats';
+import { useChats } from '@/store/chats';
+import { listMessages } from '@/lib/appwrite';
+import { decryptMessage } from '@/lib/encryption'; // implement this
+import { useEncryptionKey } from '@/store/encryption'; // zustand store for session key
 
 export default function ChatWindow() {
-  const { selectedChat } = useChats();
+  const { selectedChatId } = useChats();
+  const [messages, setMessages] = useState<any[]>([]);
+  const { encryptionKey } = useEncryptionKey();
 
-  if (!selectedChat) {
-    return (
-      <Box sx={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-        <Typography variant="h6" color="text.secondary">Select a chat to start messaging</Typography>
-      </Box>
-    );
-  }
+  useEffect(() => {
+    if (selectedChatId && encryptionKey) {
+      listMessages(selectedChatId).then(async res => {
+        const decrypted = await Promise.all(
+          res.documents.map(async (msg: any) => ({
+            ...msg,
+            content: await decryptMessage(msg.content, encryptionKey)
+          }))
+        );
+        setMessages(decrypted);
+      });
+    }
+  }, [selectedChatId, encryptionKey]);
+
+  if (!selectedChatId) return <Box sx={{ p: 4 }}>Select a chat to start messaging.</Box>;
 
   return (
-    <Box sx={{ flex: 1, display: 'flex', flexDirection: 'column', height: '100vh' }}>
-      <MessageList chatId={selectedChat.chatId} />
-      <MessageInput chatId={selectedChat.chatId} />
+    <Box sx={{ p: 4 }}>
+      {messages.map(msg => (
+        <Box key={msg.$id} sx={{ mb: 2 }}>
+          <Typography variant="body2" color="text.secondary">{msg.senderId?.displayName || msg.senderId?.username}</Typography>
+          <Typography variant="body1">{msg.content}</Typography>
+        </Box>
+      ))}
     </Box>
   );
 }
