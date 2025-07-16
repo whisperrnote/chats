@@ -4,12 +4,12 @@ import { Box, Typography } from '@mui/material';
 import { useChats } from '@/store/chats';
 import { listMessages } from '@/lib/appwrite';
 import { decryptMessage } from '@/lib/encryption'; // implement this
-import { useEncryptionKey } from '@/store/encryption'; // zustand store for session key
+import { useEncryption } from '@/store/encryption'; // <-- fix import
 
 export default function ChatWindow() {
   const { selectedChatId } = useChats();
   const [messages, setMessages] = useState<any[]>([]);
-  const { encryptionKey } = useEncryptionKey();
+  const { encryptionKey } = useEncryption(); // <-- fix usage
 
   useEffect(() => {
     if (selectedChatId && encryptionKey) {

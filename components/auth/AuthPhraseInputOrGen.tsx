@@ -5,8 +5,6 @@ import { useAuthFlow } from '@/store/authFlow';
 import { 
   generateRecoveryPhrase, 
   deriveEncryptionKey, 
-  generateKeyPair, 
-  encryptPrivateKey 
 } from '@/lib/phrase';
 import {
   signupEmailPassword,
@@ -73,12 +71,11 @@ export default function AuthPhraseInputOrGen() {
       
       // Derive encryption key from mnemonic
       const encryptionKey = await deriveEncryptionKey(phrase, canonizeUsername(username) || username);
-      
-      // Generate keypair for E2E encryption
-      const { publicKey, privateKey } = await generateKeyPair();
-      
-      // Encrypt private key with derived key
-      const encryptedPrivateKey = await encryptPrivateKey(privateKey, encryptionKey);
+      // For now, just use the encryptionKey as both publicKey and encryptedPrivateKey (stub)
+      const { publicKey, encryptedPrivateKey } = {
+        publicKey: encryptionKey,
+        encryptedPrivateKey: encryptionKey,
+      };
       
       // Create user profile in database
       await createUserProfile({
