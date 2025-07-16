@@ -1,57 +1,69 @@
 'use client';
-import { Box } from '@mui/material';
-import { styled } from '@mui/material/styles';
+import { Box, useTheme } from '@mui/material';
 import { motion } from 'framer-motion';
-
-const PatternContainer = styled(Box)(({ theme }) => ({
-  position: 'fixed',
-  top: 0,
-  left: 0,
-  width: '100%',
-  height: '100%',
-  overflow: 'hidden',
-  zIndex: -1,
-  background: theme.palette.mode === 'dark' 
-    ? 'linear-gradient(135deg, #1a1a2e, #16213e, #0f3460)'
-    : 'linear-gradient(135deg, #667eea, #764ba2, #f093fb)',
-}));
-
-const PatternSVG = styled('svg')({
-  position: 'absolute',
-  width: '100%',
-  height: '100%',
-  opacity: 0.1,
-});
+import { usePatternSettings } from '@/store/patterns';
 
 export default function PatternBackground({ children }: { children: React.ReactNode }) {
+  const theme = useTheme();
+  const { currentPattern, opacity, scale, animationEnabled } = usePatternSettings();
+
+  const patternColor = theme.palette.mode === 'dark' ? 'rgba(185, 122, 86, 0.1)' : 'rgba(124, 77, 30, 0.08)';
+
   return (
-    <>
-      <PatternContainer>
-        <motion.div
-          animate={{
-            x: [0, 20, 0],
-            y: [0, -20, 0],
-          }}
-          transition={{
-            duration: 20,
-            repeat: Infinity,
-            ease: "linear"
-          }}
-        >
-          <PatternSVG viewBox="0 0 100 100">
-            <defs>
-              <pattern id="pattern" x="0" y="0" width="20" height="20" patternUnits="userSpaceOnUse">
-                <circle cx="10" cy="10" r="2" fill="currentColor" opacity="0.3" />
-                <path d="M5,5 L15,15 M15,5 L5,15" stroke="currentColor" strokeWidth="0.5" opacity="0.2" />
-              </pattern>
-            </defs>
-            <rect width="100%" height="100%" fill="url(#pattern)" />
-          </PatternSVG>
-        </motion.div>
-      </PatternContainer>
+    <Box sx={{ position: 'relative', minHeight: '100vh', bgcolor: 'background.default' }}>
+      {/* Animated Pattern Background */}
+      <motion.div
+        style={{
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          width: '100%',
+          height: '100%',
+          zIndex: -1,
+          opacity: opacity / 100,
+        }}
+        animate={animationEnabled ? {
+          x: [0, 20, 0],
+          y: [0, -20, 0],
+        } : {}}
+        transition={{
+          duration: 20,
+          repeat: Infinity,
+          ease: "linear"
+        }}
+      >
+        <svg width="100%" height="100%" style={{ transform: `scale(${scale / 100})` }}>
+          <defs>
+            <pattern
+              id="geometric-pattern"
+              x="0"
+              y="0"
+              width="60"
+              height="60"
+              patternUnits="userSpaceOnUse"
+            >
+              {currentPattern === 'circles' && (
+                <circle cx="30" cy="30" r="8" fill="none" stroke={patternColor} strokeWidth="1" />
+              )}
+              {currentPattern === 'lines' && (
+                <>
+                  <line x1="0" y1="0" x2="60" y2="60" stroke={patternColor} strokeWidth="1" />
+                  <line x1="60" y1="0" x2="0" y2="60" stroke={patternColor} strokeWidth="1" />
+                </>
+              )}
+              {currentPattern === 'triangles' && (
+                <polygon points="30,10 50,50 10,50" fill="none" stroke={patternColor} strokeWidth="1" />
+              )}
+            </pattern>
+          </defs>
+          <rect width="100%" height="100%" fill="url(#geometric-pattern)" />
+        </svg>
+      </motion.div>
+      
+      {/* Content */}
       <Box sx={{ position: 'relative', zIndex: 1 }}>
         {children}
       </Box>
-    </>
+    </Box>
   );
 }

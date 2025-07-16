@@ -279,4 +279,73 @@ export function privateDocPermissions(userId: string) {
   ];
 }
 
+// --- Essential Auth Utilities ---
+export async function isAuthenticated(): Promise<boolean> {
+  try {
+    await getCurrentAccount();
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+export async function getCurrentUserId(): Promise<string | null> {
+  try {
+    const user = await getCurrentAccount();
+    return user.$id || null;
+  } catch {
+    return null;
+  }
+}
+
+// --- Chat Utilities ---
+export async function getChatWithMembers(chatId: string) {
+  const [chat, members] = await Promise.all([
+    getChat(chatId),
+    listChatMembers(chatId)
+  ]);
+  return { ...chat, members: members.documents };
+}
+
+export async function getMessagesForChat(chatId: string, limit = 50) {
+  return listMessages(chatId, [
+    Query.orderDesc('createdAt'),
+    Query.limit(limit)
+  ]);
+}
+
+export async function searchChats(userId: string, searchTerm: string) {
+  const userChats = await listChatsByUser(userId);
+  return userChats.documents.filter(chat => 
+    chat.title?.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+}
+
+// --- Real-time Subscriptions ---
+export function subscribeToChat(chatId: string, callback: (payload: any) => void) {
+  return client.subscribe(`databases.${DB_CORE}.collections.${COLLECTIONS.MESSAGES}.documents`, callback);
+}
+
+export function subscribeToUserChats(userId: string, callback: (payload: any) => void) {
+  return client.subscribe(`databases.${DB_CORE}.collections.${COLLECTIONS.CHATMEMBERS}.documents`, callback);
+}
+
+// --- User Profile Management ---
+export async function getCurrentUserProfile(): Promise<Users | null> {
+  try {
+    const account = await getCurrentAccount();
+    const profile = await getUser(account.$id);
+    return profile;
+  } catch (error) {
+    console.error('Failed to get user profile:', error);
+    return null;
+  }
+}
+
+export async function updateUserProfile(data: Partial<Users>) {
+  const userId = await getCurrentUserId();
+  if (!userId) throw new Error('Not authenticated');
+  return updateUser(userId, data);
+}
+
 export default client;
