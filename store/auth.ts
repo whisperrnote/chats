@@ -32,7 +32,7 @@ export const useAuth = create<AuthState>()(
           set({ isLoading: true, error: null });
           const account = await getCurrentAccount();
           if (account) {
-            set({ user: account as Users, isAuthenticated: true });
+            set({ user: account as unknown as Users, isAuthenticated: true });
           }
         } catch (error) {
           console.log('Not authenticated');
