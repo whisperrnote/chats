@@ -1,6 +1,6 @@
-import AppShell from '../../components/layout/AppShell';
+import PageClient from './pageClient';
 
 export default function MainAppPage() {
-  return <AppShell />;
-
+  return <PageClient />;
+}
 }

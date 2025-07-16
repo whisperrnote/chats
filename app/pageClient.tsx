@@ -2,6 +2,8 @@
 import { useState } from 'react';
 import Container from '@mui/material/Container';
 import Box from '@mui/material/Box';
+import Typography from '@mui/material/Typography';
+import Stack from '@mui/material/Stack';
 import Topbar from '../components/layout/Topbar';
 import HeroSection from '../components/home/HeroSection';
 import FeatureHighlights from '../components/home/FeatureHighlights';
@@ -20,6 +22,7 @@ export default function PageClient() {
         <FeatureHighlights />
         <AuthActions onLogin={() => setPanel('login')} onRegister={() => setPanel('register')} />
       </Container>
+      {/* Overlay for Login/Register */}
       {panel && (
         <Box
           sx={{
