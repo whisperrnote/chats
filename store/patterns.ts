@@ -22,7 +22,7 @@ export const usePatternSettings = create<PatternState>()(
   persist(
     (set) => ({
       currentPattern: 'communication',
-      opacity: 8, // Very subtle by default
+      opacity: 20, // Increase this value (e.g., 20 for 20% opacity)
       scale: 100,
       animationEnabled: true,
       emojiRatio: 70, // 70% emojis, 30% geometric shapes

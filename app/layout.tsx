@@ -1,12 +1,20 @@
+import { Inter } from 'next/font/google';
+import AppProviders from '@/components/providers/AppProviders';
 import './globals.css';
-import { ReactNode } from 'react';
 
-export default function RootLayout({ children }: { children: ReactNode }) {
-  // In the future, wrap with ThemeProvider and AnimationProvider
+const inter = Inter({ subsets: ['latin'] });
+
+export default function RootLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
   return (
     <html lang="en">
-      <body>
-        {children}
+      <body className={inter.className}>
+        <AppProviders>
+          {children}
+        </AppProviders>
       </body>
     </html>
   );
