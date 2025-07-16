@@ -1,16 +1,23 @@
-import Sidebar from './Sidebar';
-import Topbar from './Topbar';
-import ChatWindow from '../chat/ChatWindow';
+import { Box } from '@mui/material';
+import Sidebar from '../app/Sidebar';
+import ChatList from '../app/ChatList';
+import ChatWindow from '../app/ChatWindow';
+import ProfilePanel from '../app/ProfilePanel';
+import ExtensionPanel from '../app/ExtensionPanel';
+import ResponsiveDrawer from '../app/ResponsiveDrawer';
+import { useAppLayout } from '../../store/layout';
 
 export default function AppShell() {
+  const { showProfile, showExtensions } = useAppLayout();
+
   return (
-    <div className="flex" style={{ height: '100vh' }}>
+    <Box sx={{ display: 'flex', height: '100vh', bgcolor: 'background.default' }}>
       <Sidebar />
-      <div className="flex flex-col flex-1">
-        <Topbar />
-        <ChatWindow />
-      </div>
-      {/* Future: SecondaryPanel, ProfilePanel, etc. */}
-    </div>
+      <ChatList />
+      <ChatWindow />
+      {showProfile && <ProfilePanel />}
+      {showExtensions && <ExtensionPanel />}
+      <ResponsiveDrawer />
+    </Box>
   );
 }
