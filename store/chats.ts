@@ -1,4 +1,4 @@
-import create from 'zustand';
+import { create } from 'zustand';
 import { Chats } from '../types/appwrite.d';
 
 type ChatState = {
