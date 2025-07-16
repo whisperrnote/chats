@@ -3,63 +3,117 @@ import { Box, useTheme } from '@mui/material';
 import { motion } from 'framer-motion';
 import { usePatternSettings } from '@/store/patterns';
 
+const EMOJIS = ['☺', '★', '♫', '✿', '✦', '✧', '☀', '☁', '☂', '☾'];
+
 export default function PatternBackground({ children }: { children: React.ReactNode }) {
   const theme = useTheme();
-  const { currentPattern, opacity, scale, animationEnabled } = usePatternSettings();
+  const { opacity, scale, animationEnabled } = usePatternSettings();
 
-  const patternColor = theme.palette.mode === 'dark' ? 'rgba(185, 122, 86, 0.1)' : 'rgba(124, 77, 30, 0.08)';
+  // Pick a few emojis for the pattern
+  const emojis = EMOJIS;
+
+  // Emoji color: barely visible, adapts to theme
+  const emojiColor =
+    theme.palette.mode === 'dark'
+      ? 'rgba(245, 233, 218, 0.06)'
+      : 'rgba(124, 77, 30, 0.07)';
 
   return (
     <Box sx={{ position: 'relative', minHeight: '100vh', bgcolor: 'background.default' }}>
-      {/* Animated Pattern Background */}
+      {/* Animated Emoji Pattern Background */}
       <motion.div
         style={{
           position: 'fixed',
           top: 0,
           left: 0,
-          width: '100%',
-          height: '100%',
+          width: '100vw',
+          height: '100vh',
           zIndex: -1,
           opacity: opacity / 100,
+          pointerEvents: 'none',
         }}
         animate={animationEnabled ? {
           x: [0, 20, 0],
           y: [0, -20, 0],
         } : {}}
         transition={{
-          duration: 20,
+          duration: 24,
           repeat: Infinity,
           ease: "linear"
         }}
       >
-        <svg width="100%" height="100%" style={{ transform: `scale(${scale / 100})` }}>
+        <svg
+          width="100%"
+          height="100%"
+          style={{
+            display: 'block',
+            transform: `scale(${scale / 100})`,
+          }}
+        >
           <defs>
             <pattern
-              id="geometric-pattern"
+              id="emoji-pattern"
               x="0"
               y="0"
-              width="60"
-              height="60"
+              width="64"
+              height="64"
               patternUnits="userSpaceOnUse"
             >
-              {currentPattern === 'circles' && (
-                <circle cx="30" cy="30" r="8" fill="none" stroke={patternColor} strokeWidth="1" />
-              )}
-              {currentPattern === 'lines' && (
-                <>
-                  <line x1="0" y1="0" x2="60" y2="60" stroke={patternColor} strokeWidth="1" />
-                  <line x1="60" y1="0" x2="0" y2="60" stroke={patternColor} strokeWidth="1" />
-                </>
-              )}
-              {currentPattern === 'triangles' && (
-                <polygon points="30,10 50,50 10,50" fill="none" stroke={patternColor} strokeWidth="1" />
-              )}
+              <text
+                x="16"
+                y="32"
+                fontSize="32"
+                fill={emojiColor}
+                fontFamily="Segoe UI Emoji, Apple Color Emoji, Noto Color Emoji, sans-serif"
+                opacity="1"
+              >
+                {emojis[0]}
+              </text>
+              <text
+                x="48"
+                y="16"
+                fontSize="24"
+                fill={emojiColor}
+                fontFamily="Segoe UI Emoji, Apple Color Emoji, Noto Color Emoji, sans-serif"
+                opacity="0.8"
+              >
+                {emojis[1]}
+              </text>
+              <text
+                x="32"
+                y="56"
+                fontSize="20"
+                fill={emojiColor}
+                fontFamily="Segoe UI Emoji, Apple Color Emoji, Noto Color Emoji, sans-serif"
+                opacity="0.7"
+              >
+                {emojis[2]}
+              </text>
+              <text
+                x="0"
+                y="56"
+                fontSize="18"
+                fill={emojiColor}
+                fontFamily="Segoe UI Emoji, Apple Color Emoji, Noto Color Emoji, sans-serif"
+                opacity="0.5"
+              >
+                {emojis[3]}
+              </text>
+              <text
+                x="56"
+                y="56"
+                fontSize="16"
+                fill={emojiColor}
+                fontFamily="Segoe UI Emoji, Apple Color Emoji, Noto Color Emoji, sans-serif"
+                opacity="0.4"
+              >
+                {emojis[4]}
+              </text>
             </pattern>
           </defs>
-          <rect width="100%" height="100%" fill="url(#geometric-pattern)" />
+          <rect width="100%" height="100%" fill="url(#emoji-pattern)" />
         </svg>
       </motion.div>
-      
       {/* Content */}
       <Box sx={{ position: 'relative', zIndex: 1 }}>
         {children}
