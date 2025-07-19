@@ -11,7 +11,7 @@ import {
   Storage,
 } from 'appwrite';
 
-import type * as Types from '../types/appwrite.d';
+import type * as Types from '@/types/appwrite.d';
 
 // --- Client/Service Initialization ---
 const client = new Client();
