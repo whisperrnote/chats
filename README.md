@@ -74,7 +74,7 @@ It features end-to-end encryption, mnemonic-based authentication, modular themin
 
 1. **Clone the repo:**
    ```bash
-   git clone https://github.com/your-org/whisperrchat.git
+   git clone https://github.com/whisperrnote/chats.git
    cd whisperrchat
    ```
 
