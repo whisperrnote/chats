@@ -1,36 +1,137 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# whisperrchat
 
-## Getting Started
+**Next-Gen Secure, Modular, Open-Source Chat Platform**
 
-First, run the development server:
+---
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+## 🚀 Overview
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+whisperrchat is a modern, privacy-first chat application built with Next.js, Appwrite, and RxDB.  
+It features end-to-end encryption, mnemonic-based authentication, modular theming, and extensible architecture for bots, web3, and more.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+---
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## ✨ Features
 
-## Learn More
+- **Mnemonic-Based Authentication:**  
+  - Users sign up and log in using a unique username and a 12/24-word recovery phrase.
+  - The phrase serves as both password and encryption key for true E2E security.
 
-To learn more about Next.js, take a look at the following resources:
+- **End-to-End Encryption:**  
+  - All messages and sensitive data are encrypted client-side.
+  - Private keys are encrypted with the user's mnemonic-derived key.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+- **User Profiles & Credibility:**  
+  - Rich profiles with avatars, bios, status, and credibility tiers.
+  - Username history and credibility scoring for trust and transparency.
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+- **Chats & Messaging:**  
+  - Group, channel, private, bot, and extension chats.
+  - Real-time messaging, reactions, replies, and media sharing.
+  - Modular chat extensions and bots.
 
-## Deploy on Vercel
+- **Patterned & Animated Backgrounds:**  
+  - Customizable SVG motif backgrounds, theme-aware and animated.
+  - User-selectable themes, animation levels, and live previews.
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+- **Offline Sync:**  
+  - RxDB integration for seamless offline-first experience.
+  - Automatic sync with Appwrite backend when online.
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+- **Modular Extensions:**  
+  - Bots, web3 wallets, integrations, and more via the extensions database.
+
+- **Accessibility & Responsiveness:**  
+  - Full keyboard navigation, screen reader support, and high-contrast mode.
+  - Mobile, tablet, and desktop layouts.
+
+---
+
+## 🛠️ Tech Stack
+
+- **Frontend:** Next.js 15+, React 19, MUI, Framer Motion
+- **Backend:** Appwrite Cloud (Databases, Auth, Storage, Functions)
+- **Offline:** RxDB (client-side sync)
+- **State:** Zustand
+- **Crypto:** BIP39, PBKDF2, AES-GCM (client-side)
+- **Testing:** Storybook, Vitest
+
+---
+
+## 📦 Project Structure
+
+- `/app` — Next.js app routes
+- `/components` — UI and app components
+- `/store` — Zustand state stores
+- `/lib` — Appwrite and crypto utilities
+- `/types` — Appwrite TypeScript types
+- `/public/images` — Logo and assets
+- `/stories` — Storybook stories and docs
+
+---
+
+## 📝 Getting Started
+
+1. **Clone the repo:**
+   ```bash
+   git clone https://github.com/your-org/whisperrchat.git
+   cd whisperrchat
+   ```
+
+2. **Install dependencies:**
+   ```bash
+   npm install
+   ```
+
+3. **Configure environment:**
+   - Copy `.env.sample` to `.env.local` and fill in your Appwrite project details.
+
+4. **Run the app:**
+   ```bash
+   npm run dev
+   ```
+
+5. **Open [http://localhost:3000](http://localhost:3000) in your browser.**
+
+---
+
+## 🔒 Security & Privacy
+
+- **Zero Knowledge:** Recovery phrase is never stored or transmitted.
+- **E2E Encryption:** All chat data is encrypted before leaving the device.
+- **Appwrite Auth:** Secure, scalable authentication and session management.
+
+---
+
+## 🧩 Extensibility
+
+- **Bots & Integrations:** Easily add bots, web3 wallets, and custom extensions.
+- **Themes & Patterns:** Users can create, import, and share custom themes and backgrounds.
+- **Animation Packs:** Modular animation system for UI delight.
+
+---
+
+## 📚 Documentation
+
+- [Database Schema](./docxed/whisperrote/chats/database.md)
+- [Authentication](./docxed/docs/appwrite/emailpassword.md)
+- [UI/UX System](./docxed/whisperrote/chats/ui.md)
+- [Animation System](./docxed/whisperrote/chats/animations.md)
+- [Offline Sync](./docxed/docs/appwrite/offline-sync.md)
+
+---
+
+## 💡 Contributing
+
+We welcome contributions!  
+Please see [CONTRIBUTING.md](./CONTRIBUTING.md) for guidelines.
+
+---
+
+---
+
+## 🏷️ License
+
+MIT © whisperrchat contributors
+
+---
