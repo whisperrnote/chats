@@ -82,7 +82,7 @@ function AuthTopbar() {
 export default function AuthPage() {
   const { currentTheme } = useTheme();
   const theme = createAppTheme(currentTheme);
-  const { step, setUsername, nextStep } = useAuthFlow();
+  const { step, setUsername, setStep } = useAuthFlow();
 
   const panelVariants = {
     initial: { opacity: 0, y: 40 },
@@ -110,9 +110,9 @@ export default function AuthPage() {
       civicUser.username
     ) {
       setUsername(civicUser.username);
-      nextStep();
+      setStep('phrase');
     }
-  }, [isCivicEnabled, civicUser, step, setUsername, nextStep]);
+  }, [isCivicEnabled, civicUser, step, setUsername, setStep]);
 
   return (
     <ThemeProvider theme={theme}>

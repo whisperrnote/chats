@@ -6,12 +6,26 @@ import { useRouter } from 'next/navigation';
 import ContinueButton from '@/components/ui/ContinueButton';
 import Navigation from '@/components/ui/Navigation';
 import ThemeSwitcher from '@/components/ui/ThemeSwitcher';
+import { useAuthFlow } from '@/store/authFlow';
 import {
   AppBar,
   Box,
   Toolbar,
 } from '@mui/material';
 import { styled } from '@mui/material/styles';
+
+// Civic integration flag
+const isCivicEnabled = process.env.NEXT_PUBLIC_INTEGRATION_CIVIC === "true";
+
+// Only import Civic hooks/components if enabled
+let useCivicUser: any = null;
+let CivicUserButton: any = null;
+if (isCivicEnabled) {
+  // @ts-ignore
+  useCivicUser = require('@civic/auth-web3/react').useUser;
+  // @ts-ignore
+  CivicUserButton = require('@civic/auth-web3/react').UserButton;
+}
 
 // Use only brown shades and subtle green hints for gradients/highlights
 const GlassAppBar = styled(AppBar)(({ theme }) => ({
@@ -29,6 +43,26 @@ const GlassAppBar = styled(AppBar)(({ theme }) => ({
 
 export default function Topbar() {
   const router = useRouter();
+
+  // Get username from Civic or fallback to auth flow
+  let username = '';
+  let userButton = null;
+
+  if (isCivicEnabled && useCivicUser) {
+    const civic = useCivicUser();
+    if (civic?.user?.name) {
+      username = civic.user.name;
+    } else if (civic?.user?.username) {
+      username = civic.user.username;
+    } else if (civic?.user?.email) {
+      username = civic.user.email;
+    }
+    userButton = <CivicUserButton />;
+  } else {
+    // fallback to normal auth flow
+    const { username: authUsername } = useAuthFlow();
+    username = authUsername;
+  }
 
   return (
     <motion.div
@@ -60,6 +94,14 @@ export default function Topbar() {
           </Box>
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
             <ThemeSwitcher />
+            {/* Show username if available */}
+            {username && (
+              <Box sx={{ fontWeight: 600, color: '#7c4d1e', px: 2 }}>
+                {`Hello ${username}! 👋`}
+              </Box>
+            )}
+            {/* Show Civic user button if Civic is enabled */}
+            {userButton}
             <ContinueButton onClick={() => router.push('/auth')} />
           </Box>
         </Toolbar>
