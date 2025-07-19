@@ -1,4 +1,7 @@
-import { NextRequest, NextResponse } from 'next/server';
+import {
+  NextRequest,
+  NextResponse,
+} from 'next/server';
 
 const RATE_LIMIT = 100; // requests per window
 const WINDOW_MS = 60 * 1000; // 1 minute
@@ -7,7 +10,7 @@ const WINDOW_MS = 60 * 1000; // 1 minute
 const ipHits: Record<string, { count: number; last: number }> = {};
 
 export function middleware(req: NextRequest) {
-  const ip = req.ip ?? req.headers.get('x-forwarded-for') ?? 'unknown';
+  const ip = req.headers.get('x-forwarded-for') ?? 'unknown';
   const now = Date.now();
 
   if (!ipHits[ip] || now - ipHits[ip].last > WINDOW_MS) {
