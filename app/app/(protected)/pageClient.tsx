@@ -10,6 +10,9 @@ import { useRouter } from 'next/navigation';
 import AppShell from '@/components/layout/AppShell';
 import { AnimationProvider } from '@/components/providers/AnimationProvider';
 import PatternBackground from '@/components/ui/PatternBackground';
+import {
+  getCurrentAccount,
+} from '@/lib/appwrite'; // <-- import Appwrite session check
 import { useAuthFlow } from '@/store/authFlow';
 import { useTheme } from '@/store/theme';
 import { createAppTheme } from '@/theme/theme';
@@ -43,30 +46,47 @@ export default function PageClient() {
 
   useEffect(() => {
     let shouldRedirect = false;
-    if (isCivicEnabled && civic) {
-      const user = civic.user;
-      if (user?.name) {
-        setUsername(user.name);
-      } else if (user?.username) {
-        setUsername(user.username);
-      } else if (user?.email) {
-        setUsername(user.email);
+    let checkedSession = false;
+
+    async function checkAuth() {
+      // Civic check
+      if (isCivicEnabled && civic) {
+        const user = civic.user;
+        if (user?.name) {
+          setUsername(user.name);
+        } else if (user?.username) {
+          setUsername(user.username);
+        } else if (user?.email) {
+          setUsername(user.email);
+        } else {
+          shouldRedirect = true;
+        }
+        if (!user) shouldRedirect = true;
       } else {
+        const { username: authUsername } = useAuthFlow.getState();
+        if (authUsername) {
+          setUsername(authUsername);
+        } else {
+          shouldRedirect = true;
+        }
+      }
+
+      // Appwrite session check
+      try {
+        await getCurrentAccount();
+        checkedSession = true;
+      } catch {
         shouldRedirect = true;
       }
-      if (!user) shouldRedirect = true;
-    } else {
-      const { username: authUsername } = useAuthFlow.getState();
-      if (authUsername) {
-        setUsername(authUsername);
-      } else {
-        shouldRedirect = true;
+
+      if (shouldRedirect || !checkedSession) {
+        router.push('/auth');
       }
+      setIsChecking(false);
     }
-    if (shouldRedirect) {
-      router.push('/auth');
-    }
-    setIsChecking(false);
+
+    checkAuth();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [router, civic, isCivicEnabled]);
 
   if (isChecking) {
