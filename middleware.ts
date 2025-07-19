@@ -4,7 +4,7 @@ import {
 } from 'next/server';
 
 import { middleware as authMiddleware } from '@/middleware/auth';
-import civicMiddleware, { config as civicConfig } from '@/middleware/civic';
+import civicMiddleware from '@/middleware/civic';
 import { middleware as rateLimitMiddleware } from '@/middleware/rateLimit';
 
 // Compose all middlewares in order
@@ -31,7 +31,10 @@ export function middleware(req: NextRequest) {
   return NextResponse.next();
 }
 
-// Export matcher config (merge as needed)
+// Export matcher config as a plain object literal
 export const config = {
-  matcher: civicConfig.matcher,
+  matcher: [
+    // Add all patterns you want to match here (merge from all middlewares if needed)
+    '/((?!_next|favicon.ico|sitemap.xml|robots.txt|.*\\.jpg|.*\\.png|.*\\.svg|.*\\.gif).*)',
+  ],
 };
