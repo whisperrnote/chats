@@ -1,4 +1,9 @@
 'use client';
+import {
+  useEffect,
+  useState,
+} from 'react';
+
 import { motion } from 'framer-motion';
 import { useRouter } from 'next/navigation';
 
@@ -26,37 +31,57 @@ export default function PageClient() {
   const theme = createAppTheme(currentTheme);
   const router = useRouter();
 
-  // Civic user logic
-  let username = '';
-  let user = null;
-  if (isCivicEnabled && useCivicUser) {
-    const civic = useCivicUser();
-    user = civic.user;
-    if (user?.name) {
-      username = user.name;
-    } else if (user?.username) {
-      username = user.username;
-    } else if (user?.email) {
-      username = user.email;
-    }
-    // Redirect to /auth if not authenticated
-    if (!user) {
-      if (typeof window !== 'undefined') {
-        router.push('/auth');
+  // Track auth state and redirect
+  const [isChecking, setIsChecking] = useState(true);
+  const [username, setUsername] = useState('');
+
+  useEffect(() => {
+    let shouldRedirect = false;
+    if (isCivicEnabled && useCivicUser) {
+      const civic = useCivicUser();
+      const user = civic.user;
+      if (user?.name) {
+        setUsername(user.name);
+      } else if (user?.username) {
+        setUsername(user.username);
+      } else if (user?.email) {
+        setUsername(user.email);
+      } else {
+        shouldRedirect = true;
       }
-      return null;
-    }
-  } else {
-    // fallback to normal auth flow
-    const { username: authUsername } = useAuthFlow();
-    username = authUsername;
-    // If not authenticated, redirect to /auth
-    if (!username) {
-      if (typeof window !== 'undefined') {
-        router.push('/auth');
+      if (!user) shouldRedirect = true;
+    } else {
+      const { username: authUsername } = useAuthFlow.getState();
+      if (authUsername) {
+        setUsername(authUsername);
+      } else {
+        shouldRedirect = true;
       }
-      return null;
     }
+    if (shouldRedirect) {
+      router.push('/auth');
+    }
+    setIsChecking(false);
+  }, [router]);
+
+  if (isChecking) {
+    return (
+      <ThemeProvider theme={theme}>
+        <CssBaseline />
+        <AnimationProvider>
+          <PatternBackground>
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ duration: 0.6, ease: 'easeOut' }}
+              style={{ height: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+            >
+              <div style={{ fontSize: 24, color: '#7c4d1e' }}>Loading...</div>
+            </motion.div>
+          </PatternBackground>
+        </AnimationProvider>
+      </ThemeProvider>
+    );
   }
 
   return (

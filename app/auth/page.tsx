@@ -4,7 +4,6 @@ import { useEffect } from 'react';
 import { motion } from 'framer-motion';
 import Image from 'next/image';
 
-import AuthDone from '@/components/auth/AuthDone';
 import AuthPasscodeInput from '@/components/auth/AuthPasscodeInput';
 import AuthPhraseInputOrGen from '@/components/auth/AuthPhraseInputOrGen';
 import AuthShowPhrase from '@/components/auth/AuthShowPhrase';
@@ -157,7 +156,6 @@ export default function AuthPage() {
               {step === 'phrase' && <AuthPhraseInputOrGen />}
               {step === 'showPhrase' && <AuthShowPhrase />}
               {step === 'passcode' && <AuthPasscodeInput />}
-              {step === 'done' && <AuthDone />}
             </Box>
           </motion.div>
         </Container>

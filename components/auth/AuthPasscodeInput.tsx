@@ -1,10 +1,23 @@
 'use client';
-import { Typography, TextField, Button, Stack } from '@mui/material';
 import { motion } from 'framer-motion';
+import { useRouter } from 'next/navigation';
+
 import { useAuthFlow } from '@/store/authFlow';
+import {
+  Button,
+  Stack,
+  TextField,
+  Typography,
+} from '@mui/material';
 
 export default function AuthPasscodeInput() {
-  const { passcode, setPasscode, setStep } = useAuthFlow();
+  const { passcode, setPasscode } = useAuthFlow();
+  const router = useRouter();
+
+  // Immediately go to /app after finish or skip
+  const handleFinish = () => {
+    router.push('/app');
+  };
 
   return (
     <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
@@ -25,14 +38,14 @@ export default function AuthPasscodeInput() {
       <Stack direction="row" spacing={2}>
         <Button
           variant="contained"
-          onClick={() => setStep('done')}
+          onClick={handleFinish}
           disabled={passcode.length !== 4 && passcode.length !== 6 && passcode.length !== 0}
         >
           Finish
         </Button>
         <Button
           variant="outlined"
-          onClick={() => setStep('done')}
+          onClick={handleFinish}
         >
           Skip
         </Button>

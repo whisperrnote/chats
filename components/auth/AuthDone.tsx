@@ -1,7 +1,11 @@
 'use client';
-import { Typography, Button } from '@mui/material';
 import { motion } from 'framer-motion';
 import { useRouter } from 'next/navigation';
+
+import {
+  Button,
+  Typography,
+} from '@mui/material';
 
 export default function AuthDone() {
   const router = useRouter();
