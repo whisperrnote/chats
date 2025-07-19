@@ -1,23 +1,17 @@
 'use client';
 import { motion } from 'framer-motion';
+import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 
+import ContinueButton from '@/components/ui/ContinueButton';
+import Navigation from '@/components/ui/Navigation';
+import ThemeSwitcher from '@/components/ui/ThemeSwitcher';
 import {
   AppBar,
   Box,
   Toolbar,
 } from '@mui/material';
 import { styled } from '@mui/material/styles';
-
-// Civic integration flag
-const isCivicEnabled = process.env.NEXT_PUBLIC_INTEGRATION_CIVIC === "true";
-
-// Import Navbar from chat if Civic is enabled
-let CivicNavbar: React.FC | null = null;
-if (isCivicEnabled) {
-  // @ts-ignore
-  CivicNavbar = require('/home/nathfavour/Documents/code/whisperrnote/chat/src/components/layout/Navbar').Navbar;
-}
 
 // Use only brown shades and subtle green hints for gradients/highlights
 const GlassAppBar = styled(AppBar)(({ theme }) => ({
@@ -36,11 +30,6 @@ const GlassAppBar = styled(AppBar)(({ theme }) => ({
 export default function Topbar() {
   const router = useRouter();
 
-  if (isCivicEnabled && CivicNavbar) {
-    // Render Civic Navbar from chat
-    return <CivicNavbar />;
-  }
-
   return (
     <motion.div
       initial={{ y: -100, opacity: 0 }}
@@ -57,24 +46,24 @@ export default function Topbar() {
         >
           {/* Logo image */}
           <Box sx={{ display: 'flex', alignItems: 'center' }}>
-          </Box>
+            <Image
+              src="/images/logo.png"
               alt="whisperrchat logo"
-              width={40}ar>
-              height={40}</motion.div>
-              style={{ borderRadius: 8, marginRight: 12 }} );
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-}  );    </motion.div>      </GlassAppBar>        </Toolbar>          </Box>            <ContinueButton onClick={() => router.push('/auth')} />            <ThemeSwitcher />          <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>          </Box>            <Navigation />          <Box sx={{ flex: 1, justifyContent: 'center', display: 'flex' }}>          </Box>            />              priority}
+              width={40}
+              height={40}
+              style={{ borderRadius: 8, marginRight: 12 }}
+              priority
+            />
+          </Box>
+          <Box sx={{ flex: 1, justifyContent: 'center', display: 'flex' }}>
+            <Navigation />
+          </Box>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+            <ThemeSwitcher />
+            <ContinueButton onClick={() => router.push('/auth')} />
+          </Box>
+        </Toolbar>
+      </GlassAppBar>
+    </motion.div>
+  );
+}

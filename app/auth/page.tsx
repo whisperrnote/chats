@@ -1,20 +1,36 @@
 'use client';
-import { ThemeProvider } from '@mui/material/styles';
-import CssBaseline from '@mui/material/CssBaseline';
-import Container from '@mui/material/Container';
-import Box from '@mui/material/Box';
+import { useEffect } from 'react';
+
 import { motion } from 'framer-motion';
 import Image from 'next/image';
-import { useTheme } from '@/store/theme';
-import { createAppTheme } from '@/theme/theme';
-import { useAuthFlow } from '@/store/authFlow';
-import AuthUsernameInput from '@/components/auth/AuthUsernameInput';
+
+import AuthDone from '@/components/auth/AuthDone';
+import AuthPasscodeInput from '@/components/auth/AuthPasscodeInput';
 import AuthPhraseInputOrGen from '@/components/auth/AuthPhraseInputOrGen';
 import AuthShowPhrase from '@/components/auth/AuthShowPhrase';
-import AuthPasscodeInput from '@/components/auth/AuthPasscodeInput';
-import AuthDone from '@/components/auth/AuthDone';
+import AuthUsernameInput from '@/components/auth/AuthUsernameInput';
 import PatternBackground from '@/components/ui/PatternBackground';
 import ThemeSwitcher from '@/components/ui/ThemeSwitcher';
+import { useAuthFlow } from '@/store/authFlow';
+import { useTheme } from '@/store/theme';
+import { createAppTheme } from '@/theme/theme';
+import Box from '@mui/material/Box';
+import Container from '@mui/material/Container';
+import CssBaseline from '@mui/material/CssBaseline';
+import { ThemeProvider } from '@mui/material/styles';
+
+// Civic integration flag
+const isCivicEnabled = process.env.NEXT_PUBLIC_INTEGRATION_CIVIC === "true";
+
+// Only import Civic hooks/components if enabled
+let CivicUserButton: any = null;
+let useCivicUser: any = null;
+if (isCivicEnabled) {
+  // @ts-ignore
+  CivicUserButton = require('@civic/auth-web3/react').UserButton;
+  // @ts-ignore
+  useCivicUser = require('@civic/auth-web3/react').useUser;
+}
 
 function AuthTopbar() {
   const { currentTheme } = useTheme();
@@ -66,7 +82,7 @@ function AuthTopbar() {
 export default function AuthPage() {
   const { currentTheme } = useTheme();
   const theme = createAppTheme(currentTheme);
-  const { step } = useAuthFlow();
+  const { step, setUsername, nextStep } = useAuthFlow();
 
   const panelVariants = {
     initial: { opacity: 0, y: 40 },
@@ -78,6 +94,25 @@ export default function AuthPage() {
     currentTheme === 'dark'
       ? '#23180e'
       : '#f5e9da';
+
+  // Civic Auth logic
+  let civicUser = null;
+  if (isCivicEnabled && useCivicUser) {
+    civicUser = useCivicUser().user;
+  }
+
+  // If Civic user is present and we're on username step, set username and proceed
+  useEffect(() => {
+    if (
+      isCivicEnabled &&
+      civicUser &&
+      step === 'username' &&
+      civicUser.username
+    ) {
+      setUsername(civicUser.username);
+      nextStep();
+    }
+  }, [isCivicEnabled, civicUser, step, setUsername, nextStep]);
 
   return (
     <ThemeProvider theme={theme}>
@@ -104,7 +139,21 @@ export default function AuthPage() {
             }}
           >
             <Box sx={{ width: '100%' }}>
-              {step === 'username' && <AuthUsernameInput />}
+              {step === 'username' && (
+                <>
+                  <AuthUsernameInput />
+                  {isCivicEnabled && (
+                    <>
+                      <Box sx={{ my: 3, textAlign: 'center', color: '#7c4d1e', fontWeight: 700 }}>
+                        — or —
+                      </Box>
+                      <Box sx={{ display: 'flex', justifyContent: 'center', mb: 2 }}>
+                        <CivicUserButton />
+                      </Box>
+                    </>
+                  )}
+                </>
+              )}
               {step === 'phrase' && <AuthPhraseInputOrGen />}
               {step === 'showPhrase' && <AuthShowPhrase />}
               {step === 'passcode' && <AuthPasscodeInput />}
