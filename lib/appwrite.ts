@@ -1,15 +1,16 @@
 import {
-  Client,
   Account,
-  Databases,
-  Storage,
+  AuthenticationFactor,
   Avatars,
+  Client,
+  Databases,
   ID,
-  Query,
   Permission,
+  Query,
   Role as AppwriteRole,
-  AuthenticationFactor
+  Storage,
 } from 'appwrite';
+
 import type * as Types from '../types/appwrite.d';
 
 // --- Client/Service Initialization ---
@@ -23,7 +24,7 @@ export const databases = new Databases(client);
 export const storage = new Storage(client);
 export const avatars = new Avatars(client);
 
-export { ID, Query, Permission, AppwriteRole };
+export { AppwriteRole, ID, Permission, Query };
 
 // --- Database/Collection/Bucket IDs ---
 export const DB_CORE = process.env.NEXT_PUBLIC_APPWRITE_DB_CORE_ID as string;
@@ -69,10 +70,10 @@ export async function signupEmailPassword(
   userId: string = ID.unique()
 ) {
   // Create Appwrite account first
-  const account = await account.create(userId, email, password, name);
+  const createdAccount = await account.create(userId, email, password, name);
   // Then create session
   const session = await account.createEmailPasswordSession(email, password);
-  return { account, session, userId };
+  return { account: createdAccount, session, userId };
 }
 
 export async function loginEmailPassword(email: string, password: string) {
@@ -255,8 +256,8 @@ export async function listChatsByUser(userId: string) {
 }
 export async function searchChatsByTitle(userId: string, searchTerm: string) {
   const userChats = await listChatsByUser(userId);
-  return userChats.documents.filter((cm: Types.ChatMembers) =>
-    cm.chatId?.title?.toLowerCase().includes(searchTerm.toLowerCase())
+  return userChats.documents.filter((cm) =>
+    typeof cm.title === 'string' && cm.title.toLowerCase().includes(searchTerm.toLowerCase())
   );
 }
 
@@ -304,8 +305,8 @@ export async function listMessagesByUser(userId: string, queries: any[] = []) {
 }
 export async function searchMessages(chatId: string, searchTerm: string) {
   const messages = await listMessages(chatId);
-  return messages.documents.filter((msg: Types.Messages) =>
-    msg.content?.toLowerCase().includes(searchTerm.toLowerCase())
+  return messages.documents.filter((msg) =>
+    (msg as Types.Messages).content?.toLowerCase().includes(searchTerm.toLowerCase())
   );
 }
 
