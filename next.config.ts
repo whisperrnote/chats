@@ -1,4 +1,6 @@
-import type { NextConfig } from "next";
+import type { NextConfig } from 'next';
+
+import { createCivicAuthPlugin } from '@civic/auth-web3/nextjs';
 
 const nextConfig: NextConfig = {
   // Ignore TypeScript build errors
@@ -11,4 +13,12 @@ const nextConfig: NextConfig = {
   },
 };
 
-export default nextConfig;
+
+const withCivicAuth = createCivicAuthPlugin({
+  clientId: process.env.NEXT_PUBLIC_CIVIC_CLIENT_ID!,
+  loginSuccessUrl: "/app",
+  loginUrl: "/auth",
+});
+
+// export default nextConfig;
+export default withCivicAuth(nextConfig);
