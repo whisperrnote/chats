@@ -35,10 +35,15 @@ export default function PageClient() {
   const [isChecking, setIsChecking] = useState(true);
   const [username, setUsername] = useState('');
 
+  // Move hook call to top-level
+  let civic = null;
+  if (isCivicEnabled && useCivicUser) {
+    civic = useCivicUser();
+  }
+
   useEffect(() => {
     let shouldRedirect = false;
-    if (isCivicEnabled && useCivicUser) {
-      const civic = useCivicUser();
+    if (isCivicEnabled && civic) {
       const user = civic.user;
       if (user?.name) {
         setUsername(user.name);
@@ -62,7 +67,7 @@ export default function PageClient() {
       router.push('/auth');
     }
     setIsChecking(false);
-  }, [router]);
+  }, [router, civic, isCivicEnabled]);
 
   if (isChecking) {
     return (
