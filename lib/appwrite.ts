@@ -61,6 +61,18 @@ export function usernameToEmail(username: string): string {
   return `${canonizeUsername(username)}@users.noreply.whisperrchat.space`;
 }
 
+/**
+ * Get email from Civic Auth user object.
+ * If Civic user has an email, use it. Otherwise, fallback to usernameToEmail.
+ */
+export function getEmailFromCivicUser(civicUser: any): string | undefined {
+  if (!civicUser) return undefined;
+  if (civicUser.email) return civicUser.email;
+  if (civicUser.username) return usernameToEmail(civicUser.username);
+  if (civicUser.name) return usernameToEmail(civicUser.name);
+  return undefined;
+}
+
 // --- Auth & Account Methods ---
 
 export async function signupEmailPassword(
