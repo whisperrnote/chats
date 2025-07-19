@@ -69,3 +69,6 @@
 
 **Feedback:**  
 If any section is unclear or missing, please specify which workflows, patterns, or integration details need further explanation.
+
+
+notes: when asked to fix a problem, whether being explicitly told or not, first describe how you would fix the problem, adding very relevant snippets if possible. then after approval, or further inputs, and then a go-ahead, proceed to fix/implement the changes/fixes. never directly edit on first request.

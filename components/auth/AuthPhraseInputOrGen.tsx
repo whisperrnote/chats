@@ -1,20 +1,40 @@
 'use client';
-import { Typography, TextField, Button, ToggleButtonGroup, ToggleButton, CircularProgress } from '@mui/material';
-import { motion } from 'framer-motion';
-import { useAuthFlow } from '@/store/authFlow';
-import { 
-  generateRecoveryPhrase, 
-  deriveEncryptionKey, 
-} from '@/lib/phrase';
-import {
-  signupEmailPassword,
-  loginEmailPassword,
-  findUserByUsername,
-  createUserProfile,
-  usernameToEmail,
-  ID,
-} from '@/lib/appwrite';
 import { useState } from 'react';
+
+import { motion } from 'framer-motion';
+
+import {
+  createUserProfile,
+  findUserByUsername,
+  getEmailFromCivicUser,
+  ID,
+  loginEmailPassword,
+  signupEmailPassword,
+  usernameToEmail,
+} from '@/lib/appwrite';
+import {
+  deriveEncryptionKey,
+  generateRecoveryPhrase,
+} from '@/lib/phrase';
+import { useAuthFlow } from '@/store/authFlow';
+import {
+  Button,
+  CircularProgress,
+  TextField,
+  ToggleButton,
+  ToggleButtonGroup,
+  Typography,
+} from '@mui/material';
+
+// Civic integration flag
+const isCivicEnabled = process.env.NEXT_PUBLIC_INTEGRATION_CIVIC === "true";
+
+// Only import Civic hooks/components if enabled
+let useCivicUser: any = null;
+if (isCivicEnabled) {
+  // @ts-ignore
+  useCivicUser = require('@civic/auth-web3/react').useUser;
+}
 
 export default function AuthPhraseInputOrGen() {
   const {
@@ -61,14 +81,22 @@ export default function AuthPhraseInputOrGen() {
         setLoading(false);
         return;
       }
-      
+
       // Generate unique user ID
       const userId = ID.unique();
-      const email = usernameToEmail(username);
-      
+
+      // Civic fallback logic
+      let civicUser = null;
+      if (isCivicEnabled && useCivicUser) {
+        civicUser = useCivicUser().user;
+      }
+      // Try to get email from Civic, fallback to username-based email
+      const email =
+        getEmailFromCivicUser(civicUser) || usernameToEmail(username);
+
       // Create Appwrite account and session
       const { session } = await signupEmailPassword(email, phrase, username, userId);
-      
+
       // Derive encryption key from mnemonic
       const encryptionKey = await deriveEncryptionKey(phrase, canonizeUsername(username) || username);
       // For now, just use the encryptionKey as both publicKey and encryptedPrivateKey (stub)
@@ -76,7 +104,7 @@ export default function AuthPhraseInputOrGen() {
         publicKey: encryptionKey,
         encryptedPrivateKey: encryptionKey,
       };
-      
+
       // Create user profile in database
       await createUserProfile({
         userId,
@@ -86,7 +114,7 @@ export default function AuthPhraseInputOrGen() {
         publicKey,
         encryptedPrivateKey,
       });
-      
+
       setStep('done');
     } catch (e: any) {
       console.error('Signup error:', e);
