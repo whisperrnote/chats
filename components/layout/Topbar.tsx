@@ -59,7 +59,22 @@ export default function Topbar() {
           <Box sx={{ display: 'flex', alignItems: 'center' }}>
           </Box>
               alt="whisperrchat logo"
-      </GlassAppBar>
-    </motion.div>
-  );
-}
+              width={40}ar>
+              height={40}</motion.div>
+              style={{ borderRadius: 8, marginRight: 12 }} );
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+}  );    </motion.div>      </GlassAppBar>        </Toolbar>          </Box>            <ContinueButton onClick={() => router.push('/auth')} />            <ThemeSwitcher />          <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>          </Box>            <Navigation />          <Box sx={{ flex: 1, justifyContent: 'center', display: 'flex' }}>          </Box>            />              priority}
