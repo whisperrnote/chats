@@ -144,8 +144,8 @@ export default function AuthPage() {
                   <AuthUsernameInput />
                   {isCivicEnabled && (
                     <>
-                      <Box sx={{ my: 3, textAlign: 'center', color: '#7c4d1e', fontWeight: 700 }}>
-                        — or —
+                      <Box sx={{ my: 3, textAlign: 'center', fontWeight: 700 }}>
+                        — or use<span style={{ color: '#4ECDC4' }}> Civic</span> —
                       </Box>
                       <Box sx={{ display: 'flex', justifyContent: 'center', mb: 2 }}>
                         <CivicUserButton />

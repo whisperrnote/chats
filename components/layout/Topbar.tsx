@@ -100,8 +100,7 @@ export default function Topbar() {
                 {`Hello ${username}! 👋`}
               </Box>
             )}
-            {/* Show Civic user button if Civic is enabled */}
-            {userButton}
+            {/* Removed Civic user button (Sign In) */}
             <ContinueButton onClick={() => router.push('/auth')} />
           </Box>
         </Toolbar>
