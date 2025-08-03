@@ -4,7 +4,6 @@ import {
 } from 'next/server';
 
 import { middleware as authMiddleware } from '@/middleware/auth';
-import civicMiddleware from '@/middleware/civic';
 import { middleware as rateLimitMiddleware } from '@/middleware/rateLimit';
 
 // Compose all middlewares in order
@@ -13,12 +12,6 @@ export function middleware(req: NextRequest) {
   const rateLimitResult = rateLimitMiddleware(req);
   if (rateLimitResult instanceof NextResponse && rateLimitResult !== NextResponse.next()) {
     return rateLimitResult;
-  }
-
-  // Civic auth
-  const civicResult = civicMiddleware(req);
-  if (civicResult instanceof NextResponse && civicResult !== NextResponse.next()) {
-    return civicResult;
   }
 
   // Custom auth

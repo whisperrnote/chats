@@ -18,18 +18,6 @@ import Container from '@mui/material/Container';
 import CssBaseline from '@mui/material/CssBaseline';
 import { ThemeProvider } from '@mui/material/styles';
 
-// Civic integration flag
-const isCivicEnabled = process.env.NEXT_PUBLIC_INTEGRATION_CIVIC === "true";
-
-// Only import Civic hooks/components if enabled
-let CivicUserButton: any = null;
-let useCivicUser: any = null;
-if (isCivicEnabled) {
-  // @ts-ignore
-  CivicUserButton = require('@civic/auth-web3/react').UserButton;
-  // @ts-ignore
-  useCivicUser = require('@civic/auth-web3/react').useUser;
-}
 
 function AuthTopbar() {
   const { currentTheme } = useTheme();
@@ -94,24 +82,6 @@ export default function AuthPage() {
       ? '#23180e'
       : '#f5e9da';
 
-  // Civic Auth logic
-  let civicUser = null;
-  if (isCivicEnabled && useCivicUser) {
-    civicUser = useCivicUser().user;
-  }
-
-  // If Civic user is present and we're on username step, set username and proceed
-  useEffect(() => {
-    if (
-      isCivicEnabled &&
-      civicUser &&
-      step === 'username' &&
-      civicUser.username
-    ) {
-      setUsername(civicUser.username);
-      setStep('phrase');
-    }
-  }, [isCivicEnabled, civicUser, step, setUsername, setStep]);
 
   return (
     <ThemeProvider theme={theme}>
@@ -139,19 +109,7 @@ export default function AuthPage() {
           >
             <Box sx={{ width: '100%' }}>
               {step === 'username' && (
-                <>
-                  <AuthUsernameInput />
-                  {isCivicEnabled && (
-                    <>
-                      <Box sx={{ my: 3, textAlign: 'center', fontWeight: 700 }}>
-                        — or use<span style={{ color: '#4ECDC4' }}> Civic</span> —
-                      </Box>
-                      <Box sx={{ display: 'flex', justifyContent: 'center', mb: 2 }}>
-                        <CivicUserButton />
-                      </Box>
-                    </>
-                  )}
-                </>
+                <AuthUsernameInput />
               )}
               {step === 'phrase' && <AuthPhraseInputOrGen />}
               {step === 'showPhrase' && <AuthShowPhrase />}

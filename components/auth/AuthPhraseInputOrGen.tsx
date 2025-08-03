@@ -6,7 +6,7 @@ import { motion } from 'framer-motion';
 import {
   createUserProfile,
   findUserByUsername,
-  getEmailFromCivicUser,
+
   ID,
   loginEmailPassword,
   signupEmailPassword,
@@ -26,15 +26,6 @@ import {
   Typography,
 } from '@mui/material';
 
-// Civic integration flag
-const isCivicEnabled = process.env.NEXT_PUBLIC_INTEGRATION_CIVIC === "true";
-
-// Only import Civic hooks/components if enabled
-let useCivicUser: any = null;
-if (isCivicEnabled) {
-  // @ts-ignore
-  useCivicUser = require('@civic/auth-web3/react').useUser;
-}
 
 export default function AuthPhraseInputOrGen() {
   const {
@@ -85,14 +76,8 @@ export default function AuthPhraseInputOrGen() {
       // Generate unique user ID
       const userId = ID.unique();
 
-      // Civic fallback logic
-      let civicUser = null;
-      if (isCivicEnabled && useCivicUser) {
-        civicUser = useCivicUser().user;
-      }
-      // Try to get email from Civic, fallback to username-based email
-      const email =
-        getEmailFromCivicUser(civicUser) || usernameToEmail(username);
+      // Use username-based email
+      const email = usernameToEmail(username);
 
       // Create Appwrite account and session
       const { session } = await signupEmailPassword(email, phrase, username, userId);

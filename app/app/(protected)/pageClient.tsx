@@ -19,15 +19,6 @@ import { createAppTheme } from '@/theme/theme';
 import CssBaseline from '@mui/material/CssBaseline';
 import { ThemeProvider } from '@mui/material/styles';
 
-// Civic integration flag
-const isCivicEnabled = process.env.NEXT_PUBLIC_INTEGRATION_CIVIC === "true";
-
-// Only import Civic hooks/components if enabled
-let useCivicUser: any = null;
-if (isCivicEnabled) {
-  // @ts-ignore
-  useCivicUser = require('@civic/auth-web3/react').useUser;
-}
 
 export default function PageClient() {
   const { currentTheme } = useTheme();
@@ -38,37 +29,18 @@ export default function PageClient() {
   const [isChecking, setIsChecking] = useState(true);
   const [username, setUsername] = useState('');
 
-  // Move hook call to top-level
-  let civic = null;
-  if (isCivicEnabled && useCivicUser) {
-    civic = useCivicUser();
-  }
 
   useEffect(() => {
     let shouldRedirect = false;
     let checkedSession = false;
 
     async function checkAuth() {
-      // Civic check
-      if (isCivicEnabled && civic) {
-        const user = civic.user;
-        if (user?.name) {
-          setUsername(user.name);
-        } else if (user?.username) {
-          setUsername(user.username);
-        } else if (user?.email) {
-          setUsername(user.email);
-        } else {
-          shouldRedirect = true;
-        }
-        if (!user) shouldRedirect = true;
+      // Use username from auth flow
+      const { username: authUsername } = useAuthFlow.getState();
+      if (authUsername) {
+        setUsername(authUsername);
       } else {
-        const { username: authUsername } = useAuthFlow.getState();
-        if (authUsername) {
-          setUsername(authUsername);
-        } else {
-          shouldRedirect = true;
-        }
+        shouldRedirect = true;
       }
 
       // Appwrite session check
@@ -87,7 +59,7 @@ export default function PageClient() {
 
     checkAuth();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [router, civic, isCivicEnabled]);
+  }, [router]);
 
   if (isChecking) {
     return (
