@@ -42,15 +42,17 @@ export const useAuth = create<AuthState>()(
         }
       },
       
-      signOut: async () => {
-        try {
-          await logout();
-          set({ user: null, isAuthenticated: false, error: null });
-        } catch (error) {
-          set({ error: 'Failed to sign out' });
-        }
-      },
-    }),
+       signOut: async () => {
+         try {
+           await logout();
+           // Clear sensitive encryption keys from memory
+           const { clearKeys } = require('@/store/encryption');
+           if (typeof clearKeys === 'function') clearKeys();
+           set({ user: null, isAuthenticated: false, error: null });
+         } catch (error) {
+           set({ error: 'Failed to sign out' });
+         }
+       },    }),
     {
       name: 'auth-storage',
       partialize: (state) => ({ user: state.user, isAuthenticated: state.isAuthenticated }),
