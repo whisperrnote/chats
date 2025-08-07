@@ -71,13 +71,33 @@ export async function signupEmailPassword(
   userId: string = ID.unique()
 ) {
   try {
+    console.log('signupEmailPassword called with:', {
+      email,
+      passwordLength: password.length,
+      name,
+      userId,
+      endpoint: process.env.NEXT_PUBLIC_APPWRITE_ENDPOINT,
+      projectId: process.env.NEXT_PUBLIC_APPWRITE_PROJECT_ID
+    });
+    
     // Create Appwrite account first
+    console.log('Creating Appwrite account...');
     const createdAccount = await account.create(userId, email, password, name);
+    console.log('Account created successfully:', createdAccount);
+    
     // Then create session
+    console.log('Creating session...');
     const session = await account.createEmailPasswordSession(email, password);
+    console.log('Session created successfully:', session);
+    
     return { account: createdAccount, session, userId };
-  } catch (error) {
+  } catch (error: any) {
     console.error('Appwrite signup error:', error);
+    console.error('Error details:', {
+      message: error?.message,
+      code: error?.code,
+      type: error?.type
+    });
     throw error;
   }
 }

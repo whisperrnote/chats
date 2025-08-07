@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { motion } from 'framer-motion';
 
 import {
+  canonizeUsername,
   createUserProfile,
   findUserByUsername,
 
@@ -14,6 +15,7 @@ import {
 } from '@/lib/appwrite';
 import {
   deriveEncryptionKey,
+  derivePasswordFromPhrase,
   generateRecoveryPhrase,
 } from '@/lib/phrase';
 import { useAuthFlow } from '@/store/authFlow';
@@ -81,6 +83,15 @@ export default function AuthPhraseInputOrGen() {
 
        // Derive a strong password from phrase for Appwrite
        const derivedPassword = derivePasswordFromPhrase(phrase, username);
+       
+       // Debug logging
+       console.log('Signup attempt:', {
+         email,
+         passwordLength: derivedPassword.length,
+         username,
+         userId
+       });
+       
        // Create Appwrite account and session
        const { session } = await signupEmailPassword(email, derivedPassword, username, userId);
        // Derive encryption key from mnemonic
