@@ -87,8 +87,13 @@ export async function signupEmailPassword(
     
     // Then create session
     console.log('Creating session...');
-    const session = await account.createEmailPasswordSession(email, password);
-    console.log('Session created successfully:', session);
+    try {
+      const session = await account.createEmailPasswordSession(email, password);
+      console.log('Session created successfully:', session);
+    } catch (err) {
+      console.error('account.createEmailPasswordSession threw:', err);
+      throw err;
+    }
     
     return { account: createdAccount, session, userId };
   } catch (error: any) {

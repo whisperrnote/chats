@@ -61,6 +61,7 @@ export default function AuthPhraseInputOrGen() {
       // Check if username already exists
       console.log('Step 1: Checking if username exists...');
       const existingUser = await findUserByUsername(username);
+console.log('findUserByUsername result:', existingUser);
       if (existingUser) {
         console.log('Username already exists:', existingUser);
         setError('Username already exists. Please choose another.');
