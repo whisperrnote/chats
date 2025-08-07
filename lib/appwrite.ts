@@ -70,11 +70,16 @@ export async function signupEmailPassword(
   name: string,
   userId: string = ID.unique()
 ) {
-  // Create Appwrite account first
-  const createdAccount = await account.create(userId, email, password, name);
-  // Then create session
-  const session = await account.createEmailPasswordSession(email, password);
-  return { account: createdAccount, session, userId };
+  try {
+    // Create Appwrite account first
+    const createdAccount = await account.create(userId, email, password, name);
+    // Then create session
+    const session = await account.createEmailPasswordSession(email, password);
+    return { account: createdAccount, session, userId };
+  } catch (error) {
+    console.error('Appwrite signup error:', error);
+    throw error;
+  }
 }
 
 export async function loginEmailPassword(email: string, password: string) {
