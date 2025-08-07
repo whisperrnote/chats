@@ -30,6 +30,7 @@ import {
 
 
 export default function AuthPhraseInputOrGen() {
+
   // Log all state values for debugging
   console.log('AuthPhraseInputOrGen state:', {
     usernameExists,
@@ -38,24 +39,6 @@ export default function AuthPhraseInputOrGen() {
     phrase,
     error
   });
-  const {
-    usernameExists,
-    username,
-    phraseType, setPhraseType,
-    phrase, setPhrase,
-    setStep,
-    error, setError
-  } = useAuthFlow() as {
-    usernameExists: boolean;
-    username: string;
-    phraseType: 12 | 24 | null;
-    setPhraseType: (val: 12 | 24 | null) => void;
-    phrase: string;
-    setPhrase: (val: string) => void;
-    setStep: (val: string) => void;
-    error: string;
-    setError: (val: string) => void;
-  };
 
   const [loading, setLoading] = useState(false);
 
@@ -140,16 +123,16 @@ console.log('findUserByUsername result:', existingUser);
 
       console.log('=== SIGNUP FLOW COMPLETED SUCCESSFULLY ===');
       setStep('done');
-    } catch (e: any) {
+    } catch (err: any) {
       console.error('=== SIGNUP FLOW FAILED ===');
-      console.error('Signup error:', e);
+      console.error('Signup error:', err);
       console.error('Error details:', {
-        message: e.message,
-        code: e.code,
-        type: e.type,
-        stack: e.stack
+        message: err.message,
+        code: err.code,
+        type: err.type,
+        stack: err.stack
       });
-      setError(`Failed to create account: ${e.message || 'Unknown error'}`);
+      setError(`Failed to create account: ${err.message || 'Unknown error'}`);
     } finally {
       setLoading(false);
     }
