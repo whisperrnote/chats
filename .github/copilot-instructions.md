@@ -22,7 +22,7 @@
   - Patterned backgrounds and theme switching are available globally.
 - **Middleware:**  
   - All Next.js middleware must be composed in `/middleware.ts` at the project root.
-  - Individual middlewares (auth, civic, rateLimit) are imported and executed in sequence.
+  - Individual middlewares (auth, rateLimit) are imported and executed in sequence.
   - Exported `config` must be a plain object literal with a merged matcher array.
 - **External Integrations:**  
   - Civic Auth: `/app/layout.tsx` wraps the app in `CivicAuthProvider` if enabled.
