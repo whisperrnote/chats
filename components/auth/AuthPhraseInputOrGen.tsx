@@ -30,6 +30,14 @@ import {
 
 
 export default function AuthPhraseInputOrGen() {
+  // Log all state values for debugging
+  console.log('AuthPhraseInputOrGen state:', {
+    usernameExists,
+    username,
+    phraseType,
+    phrase,
+    error
+  });
   const {
     usernameExists,
     username,
