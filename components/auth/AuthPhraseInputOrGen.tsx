@@ -51,61 +51,74 @@ export default function AuthPhraseInputOrGen() {
 
   const [loading, setLoading] = useState(false);
 
-  // Helper: derive public/private keypair and encrypt private key (stub for now)
-  async function generateKeysAndEncrypt(phrase: string, username: string) {
-    // In production, use libsodium or similar for keypair generation
-    // Here, just use the encryption key as both public and encrypted private key for demo
-    const encryptionKey = await deriveEncryptionKey(phrase, username);
-    return {
-      publicKey: encryptionKey,
-      encryptedPrivateKey: encryptionKey,
-    };
-  }
-
   // Signup: create Appwrite account, then user profile in DB
   const handleSignup = async () => {
+    console.log('handleSignup called');
     setLoading(true);
     setError('');
+    console.log('=== SIGNUP FLOW STARTED ===');
     try {
       // Check if username already exists
+      console.log('Step 1: Checking if username exists...');
       const existingUser = await findUserByUsername(username);
       if (existingUser) {
+        console.log('Username already exists:', existingUser);
         setError('Username already exists. Please choose another.');
         setLoading(false);
         return;
       }
+      console.log('Step 1: Username available ✓');
 
       // Generate unique user ID
+      console.log('Step 2: Generating user ID...');
       const userId = ID.unique();
+      console.log('Step 2: User ID generated:', userId);
 
       // Use username-based email
+      console.log('Step 3: Generating email...');
       const email = usernameToEmail(username);
+      console.log('Step 3: Email generated:', email);
 
-       // Derive a strong password from phrase for Appwrite
-       const derivedPassword = derivePasswordFromPhrase(phrase, username);
-       
-       // Debug logging
-       console.log('Signup attempt:', {
-         email,
-         passwordLength: derivedPassword.length,
-         username,
-         userId
-       });
-       
-       // Create Appwrite account and session
-       const { session } = await signupEmailPassword(email, derivedPassword, username, userId);
-       // Derive encryption key from mnemonic
-       const encryptionKey = await deriveEncryptionKey(phrase, canonizeUsername(username) || username);
-       // Store encryption key in session state
-       const { useEncryption } = require('@/store/encryption');
-       useEncryption.getState().setEncryptionKey(encryptionKey);
-       // For now, just use the encryptionKey as both publicKey and encryptedPrivateKey (stub)
-       const { publicKey, encryptedPrivateKey } = {
-         publicKey: encryptionKey,
-         encryptedPrivateKey: encryptionKey,
-       };
+      // Derive a strong password from phrase for Appwrite
+      console.log('Step 4: Deriving password...');
+      const derivedPassword = derivePasswordFromPhrase(phrase, username);
+      console.log('Step 4: Password derived, length:', derivedPassword.length);
+      
+      // Debug logging
+      console.log('Step 5: Calling signupEmailPassword with:', {
+        email,
+        passwordLength: derivedPassword.length,
+        username,
+        userId
+      });
+      
+      // Create Appwrite account and session
+      console.log('Step 5: Creating Appwrite account...');
+      const { session, account: createdAccount } = await signupEmailPassword(email, derivedPassword, username, userId);
+      console.log('Step 5: Appwrite account created successfully ✓');
+      console.log('Created account:', createdAccount);
+      console.log('Created session:', session);
+
+      // Derive encryption key from mnemonic
+      console.log('Step 6: Deriving encryption key...');
+      const encryptionKey = await deriveEncryptionKey(phrase, canonizeUsername(username) || username);
+      console.log('Step 6: Encryption key derived ✓');
+      
+      // Store encryption key in session state
+      console.log('Step 7: Storing encryption key in session...');
+      const { useEncryption } = require('@/store/encryption');
+      useEncryption.getState().setEncryptionKey(encryptionKey);
+      console.log('Step 7: Encryption key stored ✓');
+      
+      // For now, just use the encryptionKey as both publicKey and encryptedPrivateKey (stub)
+      const { publicKey, encryptedPrivateKey } = {
+        publicKey: encryptionKey,
+        encryptedPrivateKey: encryptionKey,
+      };
+
       // Create user profile in database
-      await createUserProfile({
+      console.log('Step 8: Creating user profile in database...');
+      const userProfile = await createUserProfile({
         userId,
         username,
         displayName: username,
@@ -113,10 +126,20 @@ export default function AuthPhraseInputOrGen() {
         publicKey,
         encryptedPrivateKey,
       });
+      console.log('Step 8: User profile created successfully ✓');
+      console.log('User profile:', userProfile);
 
+      console.log('=== SIGNUP FLOW COMPLETED SUCCESSFULLY ===');
       setStep('done');
     } catch (e: any) {
+      console.error('=== SIGNUP FLOW FAILED ===');
       console.error('Signup error:', e);
+      console.error('Error details:', {
+        message: e.message,
+        code: e.code,
+        type: e.type,
+        stack: e.stack
+      });
       setError(`Failed to create account: ${e.message || 'Unknown error'}`);
     } finally {
       setLoading(false);
@@ -125,6 +148,7 @@ export default function AuthPhraseInputOrGen() {
 
   // Login: create session
   const handleLogin = async () => {
+    console.log('handleLogin called');
     setLoading(true);
     setError('');
     try {
@@ -135,15 +159,17 @@ export default function AuthPhraseInputOrGen() {
         return;
       }
       
-       const email = usernameToEmail(username);
-       const derivedPassword = derivePasswordFromPhrase(phrase, username);
-       await loginEmailPassword(email, derivedPassword);      
-       // Derive encryption key and store in session (for message decryption)
-       const encryptionKey = await deriveEncryptionKey(phrase, canonizeUsername(username) || username);
-       // Store encryption key in session state
-       const { useEncryption } = require('@/store/encryption');
-       useEncryption.getState().setEncryptionKey(encryptionKey);
-             setStep('done');
+      const email = usernameToEmail(username);
+      const derivedPassword = derivePasswordFromPhrase(phrase, username);
+      await loginEmailPassword(email, derivedPassword);
+      
+      // Derive encryption key and store in session (for message decryption)
+      const encryptionKey = await deriveEncryptionKey(phrase, canonizeUsername(username) || username);
+      // Store encryption key in session state
+      const { useEncryption } = require('@/store/encryption');
+      useEncryption.getState().setEncryptionKey(encryptionKey);
+      
+      setStep('done');
     } catch (e: any) {
       console.error('Login error:', e);
       setError('Invalid recovery phrase or account.');
@@ -176,7 +202,7 @@ export default function AuthPhraseInputOrGen() {
           />
           <Button
             variant="contained"
-            onClick={handleLogin}
+            onClick={e => { console.log('Login button clicked'); handleLogin(); }}
             disabled={!phrase || loading}
           >
             {loading ? <CircularProgress size={20} /> : 'Login'}
@@ -212,7 +238,7 @@ export default function AuthPhraseInputOrGen() {
             <Button
               variant="contained"
               sx={{ mt: 2 }}
-              onClick={handleSignup}
+              onClick={e => { console.log('Signup button clicked'); handleSignup(); }}
               disabled={!phrase || loading}
             >
               {loading ? <CircularProgress size={20} /> : 'Sign Up'}
