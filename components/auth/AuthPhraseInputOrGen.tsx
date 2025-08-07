@@ -79,17 +79,20 @@ export default function AuthPhraseInputOrGen() {
       // Use username-based email
       const email = usernameToEmail(username);
 
-      // Create Appwrite account and session
-      const { session } = await signupEmailPassword(email, phrase, username, userId);
-
-      // Derive encryption key from mnemonic
-      const encryptionKey = await deriveEncryptionKey(phrase, canonizeUsername(username) || username);
-      // For now, just use the encryptionKey as both publicKey and encryptedPrivateKey (stub)
-      const { publicKey, encryptedPrivateKey } = {
-        publicKey: encryptionKey,
-        encryptedPrivateKey: encryptionKey,
-      };
-
+       // Derive a strong password from phrase for Appwrite
+       const derivedPassword = derivePasswordFromPhrase(phrase, username);
+       // Create Appwrite account and session
+       const { session } = await signupEmailPassword(email, derivedPassword, username, userId);
+       // Derive encryption key from mnemonic
+       const encryptionKey = await deriveEncryptionKey(phrase, canonizeUsername(username) || username);
+       // Store encryption key in session state
+       const { useEncryption } = require('@/store/encryption');
+       useEncryption.getState().setEncryptionKey(encryptionKey);
+       // For now, just use the encryptionKey as both publicKey and encryptedPrivateKey (stub)
+       const { publicKey, encryptedPrivateKey } = {
+         publicKey: encryptionKey,
+         encryptedPrivateKey: encryptionKey,
+       };
       // Create user profile in database
       await createUserProfile({
         userId,
@@ -121,14 +124,15 @@ export default function AuthPhraseInputOrGen() {
         return;
       }
       
-      const email = usernameToEmail(username);
-      await loginEmailPassword(email, phrase);
-      
-      // Derive encryption key and store in session (for message decryption)
-      const encryptionKey = await deriveEncryptionKey(phrase, canonizeUsername(username) || username);
-      // Store in context/zustand for session use
-      
-      setStep('done');
+       const email = usernameToEmail(username);
+       const derivedPassword = derivePasswordFromPhrase(phrase, username);
+       await loginEmailPassword(email, derivedPassword);      
+       // Derive encryption key and store in session (for message decryption)
+       const encryptionKey = await deriveEncryptionKey(phrase, canonizeUsername(username) || username);
+       // Store encryption key in session state
+       const { useEncryption } = require('@/store/encryption');
+       useEncryption.getState().setEncryptionKey(encryptionKey);
+             setStep('done');
     } catch (e: any) {
       console.error('Login error:', e);
       setError('Invalid recovery phrase or account.');

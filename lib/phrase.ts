@@ -1,4 +1,26 @@
+
 // Professional BIP39 mnemonic utilities using the official bip39 package
+
+/**
+ * Deterministically derive a strong password from mnemonic (and optional salt)
+ * Output: 64-char base64 string (Appwrite-compliant)
+ */
+export function derivePasswordFromPhrase(
+  mnemonic: string,
+  salt: string = 'appwrite-password'
+): string {
+  // Use PBKDF2 with 100,000 iterations, SHA256, 32 bytes output
+  const key = pbkdf2Sync(
+    mnemonic.normalize('NFKD'),
+    salt.normalize('NFKD'),
+    100000,
+    32,
+    'sha256'
+  );
+  // Return as base64 (Appwrite allows long passwords)
+  return key.toString('base64');
+}
+
 
 import * as bip39 from 'bip39';
 import { pbkdf2Sync } from 'crypto';
