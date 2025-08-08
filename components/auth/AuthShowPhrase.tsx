@@ -3,8 +3,43 @@ import { Typography, Box, Button } from '@mui/material';
 import { motion } from 'framer-motion';
 import { useAuthFlow } from '@/store/authFlow';
 
+import { useState } from 'react';
+import { useAuthFlow } from '@/store/authFlow';
+import { createE2EEKeysAndEncryptPrivateKey } from '@/lib/e2ee';
+import { updateUser, getCurrentUserId } from '@/lib/appwrite';
+import { useSnackbar } from '@/components/providers/SnackbarProvider';
+
 export default function AuthShowPhrase() {
-  const { phrase, setStep } = useAuthFlow();
+  const { phrase, username, setStep } = useAuthFlow();
+  const snackbar = useSnackbar();
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
+
+  const handleContinue = async () => {
+    setLoading(true);
+    setError('');
+    try {
+      // Use username as salt for KDF
+      const { publicKey, encryptedPrivateKey } = await createE2EEKeysAndEncryptPrivateKey(phrase, username);
+      // Update user profile in backend (assume userId is available in session or context)
+      // TODO: get userId from session or context
+      const userId = undefined; // <-- Replace with actual userId
+      await updateUser(userId, {
+        publicKey: Buffer.from(publicKey).toString('base64'),
+        encryptedPrivateKey: {
+          nonce: Buffer.from(encryptedPrivateKey.nonce).toString('base64'),
+          ciphertext: Buffer.from(encryptedPrivateKey.ciphertext).toString('base64'),
+        },
+      });
+      setStep('passcode');
+      snackbar.show('Encryption keys set up! Your data is now end-to-end encrypted.', 'success');
+    } catch (err: any) {
+      setError(err?.message || 'Failed to set up encryption keys');
+      snackbar.show(err?.message || 'Failed to set up encryption keys', 'error');
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
@@ -24,12 +59,15 @@ export default function AuthShowPhrase() {
       <Typography color="warning.main" mb={2}>
         Please write down and securely store your phrase. It cannot be recovered if lost.
       </Typography>
+      {error && <Typography color="error" mb={2}>{error}</Typography>}
       <Button
         variant="contained"
-        onClick={() => setStep('passcode')}
+        onClick={handleContinue}
+        disabled={loading}
       >
-        Continue
+        {loading ? 'Setting up...' : 'Continue'}
       </Button>
     </motion.div>
   );
 }
+

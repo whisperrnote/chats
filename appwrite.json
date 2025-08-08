@@ -103,7 +103,8 @@
                     "required": true,
                     "array": false,
                     "size": 36,
-                    "default": null
+                    "default": null,
+                    "encrypt": false
                 },
                 {
                     "key": "username",
@@ -111,7 +112,8 @@
                     "required": true,
                     "array": false,
                     "size": 32,
-                    "default": null
+                    "default": null,
+                    "encrypt": false
                 },
                 {
                     "key": "displayName",
@@ -119,7 +121,8 @@
                     "required": false,
                     "array": false,
                     "size": 64,
-                    "default": null
+                    "default": null,
+                    "encrypt": false
                 },
                 {
                     "key": "avatarUrl",
@@ -135,7 +138,8 @@
                     "required": false,
                     "array": false,
                     "size": 255,
-                    "default": null
+                    "default": null,
+                    "encrypt": false
                 },
                 {
                     "key": "phone",
@@ -143,7 +147,8 @@
                     "required": false,
                     "array": false,
                     "size": 20,
-                    "default": null
+                    "default": null,
+                    "encrypt": false
                 },
                 {
                     "key": "email",
@@ -159,7 +164,8 @@
                     "required": true,
                     "array": false,
                     "size": 1000,
-                    "default": null
+                    "default": null,
+                    "encrypt": false
                 },
                 {
                     "key": "createdAt",
@@ -205,7 +211,8 @@
                     "required": false,
                     "array": true,
                     "size": 32,
-                    "default": null
+                    "default": null,
+                    "encrypt": false
                 },
                 {
                     "key": "usernameChangedAt",
@@ -245,7 +252,8 @@
                     "required": false,
                     "array": true,
                     "size": 255,
-                    "default": null
+                    "default": null,
+                    "encrypt": false
                 },
                 {
                     "key": "twoFactorEnabled",
@@ -288,7 +296,8 @@
                     "required": false,
                     "array": false,
                     "size": 2000,
-                    "default": null
+                    "default": null,
+                    "encrypt": false
                 },
                 {
                     "key": "deleted",
@@ -365,7 +374,8 @@
                     "required": true,
                     "array": false,
                     "size": 36,
-                    "default": null
+                    "default": null,
+                    "encrypt": false
                 },
                 {
                     "key": "type",
@@ -388,7 +398,8 @@
                     "required": false,
                     "array": false,
                     "size": 64,
-                    "default": null
+                    "default": null,
+                    "encrypt": false
                 },
                 {
                     "key": "avatarUrl",
@@ -439,7 +450,8 @@
                     "required": false,
                     "array": false,
                     "size": 32,
-                    "default": null
+                    "default": null,
+                    "encrypt": false
                 },
                 {
                     "key": "deleted",
@@ -567,7 +579,8 @@
                     "required": true,
                     "array": false,
                     "size": 36,
-                    "default": null
+                    "default": null,
+                    "encrypt": false
                 },
                 {
                     "key": "chatId",
@@ -599,7 +612,8 @@
                     "required": true,
                     "array": false,
                     "size": 5000,
-                    "default": null
+                    "default": null,
+                    "encrypt": false
                 },
                 {
                     "key": "type",
@@ -659,7 +673,8 @@
                     "required": false,
                     "array": false,
                     "size": 1000,
-                    "default": null
+                    "default": null,
+                    "encrypt": false
                 },
                 {
                     "key": "deleted",
@@ -729,7 +744,8 @@
                     "required": false,
                     "array": false,
                     "size": 64,
-                    "default": null
+                    "default": null,
+                    "encrypt": false
                 },
                 {
                     "key": "deleted",
@@ -760,7 +776,8 @@
                     "required": true,
                     "array": false,
                     "size": 36,
-                    "default": null
+                    "default": null,
+                    "encrypt": false
                 },
                 {
                     "key": "userId",
@@ -780,7 +797,8 @@
                     "required": true,
                     "array": false,
                     "size": 32,
-                    "default": null
+                    "default": null,
+                    "encrypt": false
                 },
                 {
                     "key": "pushToken",
@@ -788,7 +806,8 @@
                     "required": false,
                     "array": false,
                     "size": 255,
-                    "default": null
+                    "default": null,
+                    "encrypt": false
                 },
                 {
                     "key": "lastActive",
@@ -897,7 +916,8 @@
                     "required": true,
                     "array": false,
                     "size": 32,
-                    "default": null
+                    "default": null,
+                    "encrypt": false
                 },
                 {
                     "key": "status",
@@ -947,7 +967,8 @@
                     "required": false,
                     "array": true,
                     "size": 36,
-                    "default": null
+                    "default": null,
+                    "encrypt": false
                 }
             ],
             "indexes": [
