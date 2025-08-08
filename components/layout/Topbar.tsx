@@ -7,6 +7,7 @@ import Avatar from '@/components/ui/Avatar';
 import { useAuth } from '@/store/auth';
 import Navigation from '@/components/ui/Navigation';
 import ThemeSwitcher from '@/components/ui/ThemeSwitcher';
+import ContinueButton from '@/components/ui/ContinueButton';
 import { useAuthFlow } from '@/store/authFlow';
 import {
   AppBar,
