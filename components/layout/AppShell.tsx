@@ -25,6 +25,10 @@ export default function AppShell() {
     }
   }, [isAuthenticated, isLoading, router]);
 
+  if (isLoading) {
+    return <div style={{height:'100vh',display:'flex',alignItems:'center',justifyContent:'center'}}><span>Loading...</span></div>;
+  }
+
   return (
     <motion.div
       initial={{ scale: 0.95, opacity: 0 }}
