@@ -1,9 +1,10 @@
 'use client';
 import { useEffect, useState } from 'react';
 import { Typography, TextField, Button, CircularProgress } from '@mui/material';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import { useAuthFlow } from '@/store/authFlow';
 import { findUserByUsername } from '@/lib/appwrite';
+import { useRouter } from 'next/navigation';
 
 import { loginEmailPassword, usernameToEmail } from '@/lib/appwrite';
 
@@ -38,6 +39,26 @@ export default function AuthUsernameInput() {
     return () => clearTimeout(timer);
   }, [username, setUsernameExists, setLoading, setError]);
 
+  const router = useRouter();
+
+  const handleContinue = async () => {
+    setLocalError('');
+    if (usernameExists === false) {
+      // Redirect to registration page, passing username and password if desired
+      router.push('/auth/register');
+      return;
+    }
+    setLoading(true);
+    try {
+      await loginEmailPassword(usernameToEmail(username), password);
+      setStep('phrase');
+    } catch (e: any) {
+      setLocalError(e?.message || 'Login failed');
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
       <Typography variant="h5" mb={2}>Enter your username</Typography>
@@ -49,42 +70,48 @@ export default function AuthUsernameInput() {
         autoFocus
         sx={{ mb: 2 }}
       />
-      {usernameExists === true && (
-        <>
-          <Typography color="primary" sx={{ mt: 1 }}>Username found. Please enter your password.</Typography>
-          <TextField
-            label="Password"
-            type="password"
-            value={password}
-            onChange={e => setPassword(e.target.value)}
-            fullWidth
-            sx={{ mt: 2, mb: 2 }}
-          />
-          <Button
-            variant="contained"
-            sx={{ mt: 2 }}
-            onClick={async () => {
-              setLocalError('');
-              setLoading(true);
-              try {
-                await loginEmailPassword(usernameToEmail(username), password);
-                setStep('phrase');
-              } catch (e: any) {
-                setLocalError(e?.message || 'Login failed');
-              } finally {
-                setLoading(false);
-              }
-            }}
-            disabled={loading || !username || !password}
+      <AnimatePresence>
+        {username && (
+          <motion.div
+            key="password-field"
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: 'auto' }}
+            exit={{ opacity: 0, height: 0 }}
+            transition={{ duration: 0.4, ease: 'easeInOut' }}
+            style={{ overflow: 'hidden' }}
           >
-            Continue
-          </Button>
-          {localError && <Typography color="error">{localError}</Typography>}
-        </>
-      )}
-      {usernameExists === false && (
-        <Typography color="secondary" sx={{ mt: 1 }}>Username not found. Create a new account.</Typography>
-      )}
+            {usernameExists === true && (
+              <Typography color="primary" sx={{ mt: 1 }}>Username found. Please enter your password.</Typography>
+            )}
+            {usernameExists === false && (
+              <Typography color="secondary" sx={{ mt: 1 }}>Username not found. Create a new account.</Typography>
+            )}
+            <TextField
+              label="Password"
+              type="password"
+              value={password}
+              onChange={e => setPassword(e.target.value)}
+              fullWidth
+              sx={{ mt: 2, mb: 2 }}
+              autoFocus={!!username}
+              onKeyDown={e => {
+                if (e.key === 'Enter' && password) {
+                  handleContinue();
+                }
+              }}
+            />
+            <Button
+              variant="contained"
+              sx={{ mt: 2 }}
+              onClick={handleContinue}
+              disabled={loading || !username || !password}
+            >
+              {usernameExists === false ? 'Create Account' : 'Continue'}
+            </Button>
+            {localError && <Typography color="error">{localError}</Typography>}
+          </motion.div>
+        )}
+      </AnimatePresence>
       {error && <Typography color="error">{error}</Typography>}
     </motion.div>
   );

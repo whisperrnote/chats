@@ -1,4 +1,3 @@
-```typescript
 // recovery.ts
 
 export function generateRecoveryPhrase(): string[] {
@@ -10,4 +9,3 @@ export function verifyRecoveryPhrase(phrase: string[]): boolean {
   // TODO: Implement real verification
   return phrase.length === 24;
 }
-```
