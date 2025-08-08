@@ -1,4 +1,4 @@
-'use client';
+import { useState } from 'react';
 import { motion } from 'framer-motion';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
@@ -12,9 +12,11 @@ import {
   AppBar,
   Box,
   Toolbar,
+  IconButton,
+  Menu,
+  MenuItem,
 } from '@mui/material';
 import { styled } from '@mui/material/styles';
-
 
 // Use only brown shades and subtle green hints for gradients/highlights
 const GlassAppBar = styled(AppBar)(({ theme }) => ({
@@ -29,6 +31,39 @@ const GlassAppBar = styled(AppBar)(({ theme }) => ({
   top: 0,
   zIndex: 1000,
 }));
+
+function AccountMenu({ user, signOut }: { user: any, signOut: () => Promise<void> }) {
+  const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
+  const open = Boolean(anchorEl);
+
+  const handleMenu = (event: React.MouseEvent<HTMLElement>) => {
+    setAnchorEl(event.currentTarget);
+  };
+  const handleClose = () => {
+    setAnchorEl(null);
+  };
+  const handleLogout = async () => {
+    await signOut();
+    handleClose();
+  };
+
+  return (
+    <>
+      <IconButton onClick={handleMenu} size="small" sx={{ p: 0 }}>
+        <Avatar src={user.avatarUrl} alt={user.displayName || user.username || 'User'} size={32} />
+      </IconButton>
+      <Menu
+        anchorEl={anchorEl}
+        open={open}
+        onClose={handleClose}
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
+        transformOrigin={{ vertical: 'top', horizontal: 'right' }}
+      >
+        <MenuItem onClick={handleLogout}>Log out</MenuItem>
+      </Menu>
+    </>
+  );
+}
 
 export default function Topbar() {
   const router = useRouter();
@@ -64,14 +99,13 @@ export default function Topbar() {
           </Box>
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
             <ThemeSwitcher />
-            {/* Show username if available */}
-            {username && (
-              <Box sx={{ fontWeight: 600, color: '#7c4d1e', px: 2 }}>
-                {`Hello ${username}! 👋`}
-              </Box>
+            {/* Show avatar with dropdown if authenticated */}
+            {isAuthenticated && user ? (
+              <AccountMenu user={user} signOut={signOut} />
+            ) : (
+              // Show Continue button if not authenticated
+              <ContinueButton onClick={() => router.push('/auth')} />
             )}
-            {/* Removed Civic user button (Sign In) */}
-            <ContinueButton onClick={() => router.push('/auth')} />
           </Box>
         </Toolbar>
       </GlassAppBar>
