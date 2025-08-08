@@ -288,17 +288,17 @@ export async function findUserByEmail(email: string) {
 }
 
 // --- USERNAMES ---
-export async function createUsernameDoc({ username, userId, status = 'active' }: { username: string; userId: string; status?: string }) {
+export async function createUsernameDoc({ username, status = 'active', lastUsedBy }: { username: string; status?: string; lastUsedBy?: string }) {
   const canon = canonizeUsername(username);
   if (!canon) throw new Error('Invalid username');
   const now = new Date().toISOString();
-  // Do not include $id or any Appwrite system fields in the data object
-  const data = {
+  // Only include fields defined in the schema
+  const data: Record<string, any> = {
     username: canon,
-    userId,
-    createdAt: now,
     status: status || 'active',
   };
+  if (lastUsedBy) data.lastUsedBy = lastUsedBy;
+  // Optionally, you can add lastUsedAt, cooldownUntil, history if needed
   const cleanData = (await import('./utils')).stripAppwriteSystemFields(data);
   return databases.createDocument(DB_CORE, COLLECTIONS.USERNAMES, ID.unique(), cleanData);
 }

@@ -1,5 +1,6 @@
 'use client';
 
+import React from 'react';
 import { motion } from 'framer-motion';
 import {
   Button,
@@ -136,7 +137,7 @@ export default function AuthPhraseInputOrGen() {
       setProgress('Reserving username...');
       try {
         const { createUsernameDoc } = await import('@/lib/appwrite');
-        await createUsernameDoc({ username, userId, status: 'active' });
+        await createUsernameDoc({ username, status: 'active', lastUsedBy: userId });
       } catch (err) {
         snackbar.show('Warning: Could not reserve username. Signup succeeded, but username may not be unique.', 'warning');
       }
