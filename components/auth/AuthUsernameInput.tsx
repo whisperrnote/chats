@@ -6,7 +6,7 @@ import { useAuthFlow } from '@/store/authFlow';
 import { findUserByUsername } from '@/lib/appwrite';
 import { useRouter } from 'next/navigation';
 
-import { loginEmailPassword, usernameToEmail } from '@/lib/appwrite';
+import { loginEmailPassword, signupEmailPassword, usernameToEmail } from '@/lib/appwrite';
 
 export default function AuthUsernameInput() {
   const {
@@ -58,23 +58,28 @@ export default function AuthUsernameInput() {
 
   const router = useRouter();
 
-  const handleContinue = async () => {
-    setLocalError('');
-    if (usernameExists === false) {
-      // Redirect to registration page, passing username and password if desired
-      router.push('/auth/register');
-      return;
-    }
-    setLoading(true);
-    try {
-      await loginEmailPassword(usernameToEmail(username), password);
-      setStep('phrase');
-    } catch (e: any) {
-      setLocalError(e?.message || 'Login failed');
-    } finally {
-      setLoading(false);
-    }
-  };
+   const handleContinue = async () => {
+     setLocalError('');
+     setLoading(true);
+     try {
+       if (usernameExists === false) {
+         // Register new user inline
+         const userId = undefined; // Let Appwrite generate
+         await signupEmailPassword(usernameToEmail(username), password, username, userId);
+         setStep('phrase');
+         return;
+       } else {
+         // Login existing user
+         await loginEmailPassword(usernameToEmail(username), password);
+         setStep('phrase');
+         return;
+       }
+     } catch (e: any) {
+       setLocalError(e?.message || (usernameExists === false ? 'Signup failed' : 'Login failed'));
+     } finally {
+       setLoading(false);
+     }
+   };
 
   return (
     <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>

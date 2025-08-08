@@ -82,41 +82,47 @@ export default function AuthPage() {
       : '#f5e9da';
 
 
-  return (
-    <ThemeProvider theme={theme}>
-      <CssBaseline />
-      <PatternBackground>
-        <AuthTopbar />
-        <Container maxWidth="sm" sx={{ py: 8, minHeight: 'calc(100vh - 72px)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-          <motion.div
-            variants={panelVariants}
-            initial="initial"
-            animate="animate"
-            style={{
-              background: panelBg,
-              borderRadius: 24,
-              boxShadow: '0 8px 32px rgba(124,77,30,0.13)',
-              padding: 36,
-              width: '100%',
-              maxWidth: 420,
-              margin: '0 auto',
-              display: 'flex',
-              flexDirection: 'column',
-              alignItems: 'center',
-              position: 'relative',
-            }}
-          >
-            <Box sx={{ width: '100%' }}>
-              {step === 'username' && (
-                <AuthUsernameInput />
-              )}
-              {step === 'phrase' && <AuthPhraseInputOrGen />}
-              
-              
-            </Box>
-          </motion.div>
-        </Container>
-      </PatternBackground>
-    </ThemeProvider>
-  );
-}
+   // Redirect to /app after authentication is complete
+   useEffect(() => {
+     if (step === 'done') {
+       window.location.href = '/app';
+     }
+   }, [step]);
+
+   return (
+     <ThemeProvider theme={theme}>
+       <CssBaseline />
+       <PatternBackground>
+         <AuthTopbar />
+         <Container maxWidth="sm" sx={{ py: 8, minHeight: 'calc(100vh - 72px)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+           <motion.div
+             variants={panelVariants}
+             initial="initial"
+             animate="animate"
+             style={{
+               background: panelBg,
+               borderRadius: 24,
+               boxShadow: '0 8px 32px rgba(124,77,30,0.13)',
+               padding: 36,
+               width: '100%',
+               maxWidth: 420,
+               margin: '0 auto',
+               display: 'flex',
+               flexDirection: 'column',
+               alignItems: 'center',
+               position: 'relative',
+             }}
+           >
+             <Box sx={{ width: '100%' }}>
+               {step === 'username' && (
+                 <AuthUsernameInput />
+               )}
+               {step === 'phrase' && <AuthPhraseInputOrGen />}
+               
+               
+             </Box>
+           </motion.div>
+         </Container>
+       </PatternBackground>
+     </ThemeProvider>
+   );}
