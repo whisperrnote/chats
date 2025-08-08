@@ -4,7 +4,6 @@ import { motion } from 'framer-motion';
 import { useAuthFlow } from '@/store/authFlow';
 
 import { useState } from 'react';
-import { useAuthFlow } from '@/store/authFlow';
 import { createE2EEKeysAndEncryptPrivateKey } from '@/lib/e2ee';
 import { updateUser, getCurrentUserId } from '@/lib/appwrite';
 import { useSnackbar } from '@/components/providers/SnackbarProvider';
