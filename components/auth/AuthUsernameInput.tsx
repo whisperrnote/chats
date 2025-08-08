@@ -65,10 +65,11 @@ export default function AuthUsernameInput() {
        if (usernameExists === false) {
          // Register new user inline
          const userId = undefined; // Let Appwrite generate
-         await signupEmailPassword(usernameToEmail(username), password, username, userId);
-         setStep('phrase');
-         return;
-       } else {
+          await signupEmailPassword(usernameToEmail(username), password, username, userId);
+          // Immediately log in after successful sign up
+          await loginEmailPassword(usernameToEmail(username), password);
+          setStep('phrase');
+          return;       } else {
          // Login existing user
          await loginEmailPassword(usernameToEmail(username), password);
          setStep('phrase');
