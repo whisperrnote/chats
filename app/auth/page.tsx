@@ -110,6 +110,7 @@ export default function AuthPage() {
               {step === 'username' && (
                 <AuthUsernameInput />
               )}
+              {step === 'phrase' && <AuthPhraseInputOrGen />}
               
               
             </Box>

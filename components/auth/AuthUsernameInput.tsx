@@ -5,6 +5,8 @@ import { motion } from 'framer-motion';
 import { useAuthFlow } from '@/store/authFlow';
 import { findUserByUsername } from '@/lib/appwrite';
 
+import { loginEmailPassword, usernameToEmail } from '@/lib/appwrite';
+
 export default function AuthUsernameInput() {
   const {
     username, setUsername,
@@ -13,6 +15,8 @@ export default function AuthUsernameInput() {
     step, setStep,
     error, setError
   } = useAuthFlow();
+  const [password, setPassword] = useState('');
+  const [localError, setLocalError] = useState('');
 
   useEffect(() => {
     if (!username) {
@@ -45,23 +49,43 @@ export default function AuthUsernameInput() {
         autoFocus
         sx={{ mb: 2 }}
       />
-      {loading && <CircularProgress size={24} />}
-{usernameExists === true && (
+      {usernameExists === true && (
+        <>
           <Typography color="primary" sx={{ mt: 1 }}>Username found. Please enter your password.</Typography>
-        )}      {usernameExists === false && (
+          <TextField
+            label="Password"
+            type="password"
+            value={password}
+            onChange={e => setPassword(e.target.value)}
+            fullWidth
+            sx={{ mt: 2, mb: 2 }}
+          />
+          <Button
+            variant="contained"
+            sx={{ mt: 2 }}
+            onClick={async () => {
+              setLocalError('');
+              setLoading(true);
+              try {
+                await loginEmailPassword(usernameToEmail(username), password);
+                setStep('phrase');
+              } catch (e: any) {
+                setLocalError(e?.message || 'Login failed');
+              } finally {
+                setLoading(false);
+              }
+            }}
+            disabled={loading || !username || !password}
+          >
+            Continue
+          </Button>
+          {localError && <Typography color="error">{localError}</Typography>}
+        </>
+      )}
+      {usernameExists === false && (
         <Typography color="secondary" sx={{ mt: 1 }}>Username not found. Create a new account.</Typography>
       )}
       {error && <Typography color="error">{error}</Typography>}
-      {usernameExists !== null && (
-        <Button
-          variant="contained"
-          sx={{ mt: 2 }}
-          onClick={() => setStep('done')}
-          disabled={loading || !username}
-        >
-          Continue
-        </Button>
-      )}
     </motion.div>
   );
 }
