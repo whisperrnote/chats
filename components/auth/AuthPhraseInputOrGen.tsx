@@ -1,12 +1,19 @@
 'use client';
 
 import { motion } from 'framer-motion';
-
+import {
+  Button,
+  CircularProgress,
+  TextField,
+  ToggleButton,
+  ToggleButtonGroup,
+  Typography,
+  Box,
+} from '@mui/material';
 import {
   canonizeUsername,
   createUserProfile,
   findUserByUsername,
-
   ID,
   loginEmailPassword,
   signupEmailPassword,
@@ -18,16 +25,6 @@ import {
   generateRecoveryPhrase,
 } from '@/lib/phrase';
 import { useAuthFlow } from '@/store/authFlow';
-import {
-  Button,
-  CircularProgress,
-  TextField,
-  ToggleButton,
-  ToggleButtonGroup,
-  Typography,
-  Box,
-} from '@mui/material';
-
 
 export default function AuthPhraseInputOrGen() {
   // Use auth flow store for all state
@@ -53,85 +50,38 @@ export default function AuthPhraseInputOrGen() {
     }
   }
 
-  // Log all state values for debugging
-  console.log('AuthPhraseInputOrGen state:', {
-    usernameExists,
-    username,
-    phraseType,
-    phrase,
-    error
-  });
-
-  
   // Signup: create Appwrite account, then user profile in DB
   const handleSignup = async () => {
-    console.log('handleSignup called');
     setLoading(true);
     setError('');
-    console.log('=== SIGNUP FLOW STARTED ===');
     try {
       // Check if username already exists
-      console.log('Step 1: Checking if username exists...');
       const existingUser = await findUserByUsername(username);
-console.log('findUserByUsername result:', existingUser);
       if (existingUser) {
-        console.log('Username already exists:', existingUser);
         setError('Username already exists. Please choose another.');
         setLoading(false);
         return;
       }
-      console.log('Step 1: Username available ✓');
-
       // Generate unique user ID
-      console.log('Step 2: Generating user ID...');
       const userId = ID.unique();
-      console.log('Step 2: User ID generated:', userId);
-
       // Use username-based email
-      console.log('Step 3: Generating email...');
       const email = usernameToEmail(username);
-      console.log('Step 3: Email generated:', email);
-
       // Derive a strong password from phrase for Appwrite
-      console.log('Step 4: Deriving password...');
       const derivedPassword = derivePasswordFromPhrase(phrase, username);
-      console.log('Step 4: Password derived, length:', derivedPassword.length);
-      
-      // Debug logging
-      console.log('Step 5: Calling signupEmailPassword with:', {
-        email,
-        passwordLength: derivedPassword.length,
-        username,
-        userId
-      });
-      
       // Create Appwrite account and session
-      console.log('Step 5: Creating Appwrite account...');
       const { session, account: createdAccount } = await signupEmailPassword(email, derivedPassword, username, userId);
-      console.log('Step 5: Appwrite account created successfully ✓');
-      console.log('Created account:', createdAccount);
-      console.log('Created session:', session);
-
       // Derive encryption key from mnemonic
-      console.log('Step 6: Deriving encryption key...');
       const encryptionKey = await deriveEncryptionKey(phrase, canonizeUsername(username) || username);
-      console.log('Step 6: Encryption key derived ✓');
-      
       // Store encryption key in session state
-      console.log('Step 7: Storing encryption key in session...');
       const { useEncryption } = require('@/store/encryption');
       useEncryption.getState().setEncryptionKey(encryptionKey);
-      console.log('Step 7: Encryption key stored ✓');
-      
       // For now, just use the encryptionKey as both publicKey and encryptedPrivateKey (stub)
       const { publicKey, encryptedPrivateKey } = {
         publicKey: encryptionKey,
         encryptedPrivateKey: encryptionKey,
       };
-
       // Create user profile in database
-      console.log('Step 8: Creating user profile in database...');
-      const userProfile = await createUserProfile({
+      await createUserProfile({
         userId,
         username,
         displayName: username,
@@ -139,31 +89,9 @@ console.log('findUserByUsername result:', existingUser);
         publicKey,
         encryptedPrivateKey,
       });
-      console.log('Step 8: User profile created successfully ✓');
-      console.log('User profile:', userProfile);
-
-      console.log('=== SIGNUP FLOW COMPLETED SUCCESSFULLY ===');
       setStep('done');
     } catch (err: any) {
-      console.error('=== SIGNUP FLOW FAILED ===');
-      console.error('Signup error:', err);
-      console.error('Error details:', {
-        message: err.message,
-        code: err.code,
-        type: err.type,
-        stack: err.stack
-      });
-      function stringifyError(err: any): string {
-  if (!err) return 'Unknown error';
-  if (typeof err === 'string') return err;
-  if (err.message) return `${err.message}${err.code ? ` (code: ${err.code})` : ''}${err.type ? ` [${err.type}]` : ''}`;
-  try {
-    return JSON.stringify(err);
-  } catch {
-    return String(err);
-  }
-}
-setError(`Failed to create account: ${stringifyError(err)}`);
+      setError(`Failed to create account: ${stringifyError(err)}`);
     } finally {
       setLoading(false);
     }
@@ -171,7 +99,6 @@ setError(`Failed to create account: ${stringifyError(err)}`);
 
   // Login: create session
   const handleLogin = async () => {
-    console.log('handleLogin called');
     setLoading(true);
     setError('');
     try {
@@ -181,20 +108,15 @@ setError(`Failed to create account: ${stringifyError(err)}`);
         setLoading(false);
         return;
       }
-      
       const email = usernameToEmail(username);
       const derivedPassword = derivePasswordFromPhrase(phrase, username);
       await loginEmailPassword(email, derivedPassword);
-      
       // Derive encryption key and store in session (for message decryption)
       const encryptionKey = await deriveEncryptionKey(phrase, canonizeUsername(username) || username);
-      // Store encryption key in session state
       const { useEncryption } = require('@/store/encryption');
       useEncryption.getState().setEncryptionKey(encryptionKey);
-      
       setStep('done');
     } catch (e: any) {
-      console.error('Login error:', e);
       setError('Invalid recovery phrase or account.');
     } finally {
       setLoading(false);
@@ -225,7 +147,7 @@ setError(`Failed to create account: ${stringifyError(err)}`);
           />
           <Button
             variant="contained"
-            onClick={e => { console.log('Login button clicked'); handleLogin(); }}
+            onClick={e => { handleLogin(); }}
             disabled={!phrase || loading}
           >
             {loading ? <CircularProgress size={20} /> : 'Login'}
@@ -257,22 +179,7 @@ setError(`Failed to create account: ${stringifyError(err)}`);
           >
             Generate Phrase
           </Button>
-           {step === 'showPhrase' && (
-            <Box sx={{ mb: 2, p: 2, bgcolor: 'background.paper', borderRadius: 2, border: '1px solid #eee', display: 'flex', alignItems: 'center' }}>
-              <Typography sx={{ color: '#000', fontWeight: 600, fontSize: 18, wordBreak: 'break-word', flex: 1 }}>
-                {phrase}
-              </Typography>
-              <Button
-                variant="outlined"
-                size="small"
-                sx={{ ml: 2 }}
-                onClick={() => { navigator.clipboard.writeText(phrase); }}
-              >
-                Copy
-              </Button>
-            </Box>
-          )}
-           {step === 'showPhrase' && (
+          {step === 'showPhrase' && (
             <Box sx={{ mb: 2, p: 2, bgcolor: 'background.paper', borderRadius: 2, border: '1px solid #eee', display: 'flex', alignItems: 'center' }}>
               <Typography sx={{ color: '#000', fontWeight: 600, fontSize: 18, wordBreak: 'break-word', flex: 1 }}>
                 {phrase}
@@ -291,12 +198,15 @@ setError(`Failed to create account: ${stringifyError(err)}`);
             <Button
               variant="contained"
               sx={{ mt: 2 }}
-              onClick={e => { console.log('Signup button clicked'); handleSignup(); }}
+              onClick={e => { handleSignup(); }}
               disabled={!phrase || loading}
             >
               {loading ? <CircularProgress size={20} /> : 'Sign Up'}
             </Button>
           )}
+          {error && <Typography color="error">{error}</Typography>}
+        </>
+      )}
     </motion.div>
   );
 }
