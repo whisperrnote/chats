@@ -27,7 +27,10 @@ import {
 import { useAuthFlow } from '@/store/authFlow';
 import { useSnackbar } from '@/components/providers/SnackbarProvider';
 
+import { useSnackbar } from '@/components/providers/SnackbarProvider';
+
 export default function AuthPhraseInputOrGen() {
+  const snackbar = useSnackbar();
   const snackbar = require('@/components/providers/SnackbarProvider').useSnackbar();
   // Use auth flow store for all state
   const {
