@@ -93,6 +93,67 @@ export default function AuthPhraseInputOrGen() {
         publicKey,
         encryptedPrivateKey,
       });
+      // --- Create username doc in usernames collection ---
+      try {
+        const { createUsernameDoc } = await import('@/lib/appwrite');
+        await createUsernameDoc({ username, userId });
+      } catch (err) {
+        snackbar.show('Warning: Could not reserve username. Signup succeeded, but username may not be unique.', 'warning');
+      }
+      setStep('done');
+    } catch (err: any) {
+      const msg = `Failed to create account: ${stringifyError(err)}`;
+      setError(msg);
+      snackbar.show(msg, 'error');
+    } finally {
+      setLoading(false);
+    }
+  };
+    setLoading(true);
+    setError('');
+    try {
+      // Check if username already exists
+      const existingUser = await findUserByUsername(username);
+      if (existingUser) {
+        setError('Username already exists. Please choose another.');
+        snackbar.show('Username already exists. Please choose another.', 'error');
+        setLoading(false);
+        return;
+      }
+      // Generate unique user ID
+      const userId = ID.unique();
+      // Use username-based email
+      const email = usernameToEmail(username);
+      // Derive a strong password from phrase for Appwrite
+      const derivedPassword = derivePasswordFromPhrase(phrase, username);
+      // Create Appwrite account and session
+      const { session, account: createdAccount } = await signupEmailPassword(email, derivedPassword, username, userId);
+      // Derive encryption key from mnemonic
+      const encryptionKey = await deriveEncryptionKey(phrase, canonizeUsername(username) || username);
+      // Store encryption key in session state
+      const { useEncryption } = require('@/store/encryption');
+      useEncryption.getState().setEncryptionKey(encryptionKey);
+      // For now, just use the encryptionKey as both publicKey and encryptedPrivateKey (stub)
+      const { publicKey, encryptedPrivateKey } = {
+        publicKey: encryptionKey,
+        encryptedPrivateKey: encryptionKey,
+      };
+      // Create user profile in database
+      await createUserProfile({
+        userId,
+        username,
+        displayName: username,
+        email,
+        publicKey,
+        encryptedPrivateKey,
+      });
+      // Create username doc in usernames collection
+      try {
+        const { createUsernameDoc } = await import('@/lib/appwrite');
+        await createUsernameDoc({ username, userId });
+      } catch (err) {
+        snackbar.show('Warning: Could not reserve username. Signup succeeded, but username may not be unique.', 'warning');
+      }
       setStep('done');
     } catch (err: any) {
       const msg = `Failed to create account: ${stringifyError(err)}`;
