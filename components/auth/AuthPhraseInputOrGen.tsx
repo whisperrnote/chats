@@ -19,18 +19,12 @@ import {
   signupEmailPassword,
   usernameToEmail,
 } from '@/lib/appwrite';
-import {
-  deriveEncryptionKey,
-  derivePasswordFromPhrase,
-  generateRecoveryPhrase,
-} from '@/lib/phrase';
+import { generateRecoveryPhrase } from '@/lib/phrase';
 import { useAuthFlow } from '@/store/authFlow';
 import { useSnackbar } from '@/components/providers/SnackbarProvider';
 
 export default function AuthPhraseInputOrGen() {
   const snackbar = useSnackbar();
-
-  // Use auth flow store for all state
   const {
     username, setUsername,
     phrase, setPhrase,
@@ -53,7 +47,80 @@ export default function AuthPhraseInputOrGen() {
     }
   }
 
-  // Signup: create Appwrite account, then user profile in DB
+  // Login: username/password auth, then E2EE unlock
+  const handleLogin = async () => {
+    setLoading(true);
+    setError('');
+    try {
+      const user = await findUserByUsername(username);
+      if (!user) {
+        setError('Username does not exist.');
+        snackbar.show('Username does not exist.', 'error');
+        setLoading(false);
+        return;
+      }
+      // Prompt for password (could be from another panel or state)
+      let password = '';
+      if (typeof window !== 'undefined') {
+        password = window.prompt('Enter your password for ' + username + ':', '') || '';
+      }
+      if (!password) {
+        setError('Password is required.');
+        setLoading(false);
+        return;
+      }
+      const email = usernameToEmail(username);
+      await loginEmailPassword(email, password);
+      // Fetch user profile again to get encryptedPrivateKey and publicKey
+      const freshUser = await findUserByUsername(username);
+      if (!freshUser || !freshUser.encryptedPrivateKey || !freshUser.publicKey) {
+        setError('User profile missing encryption keys.');
+        snackbar.show('User profile missing encryption keys.', 'error');
+        setLoading(false);
+        return;
+      }
+      // Decode encryptedPrivateKey (base64 string) to {nonce, ciphertext}
+      let encryptedObj;
+      try {
+        const enc = JSON.parse(freshUser.encryptedPrivateKey);
+        encryptedObj = {
+          nonce: Uint8Array.from(atob(enc.nonce), c => c.charCodeAt(0)),
+          ciphertext: Uint8Array.from(atob(enc.ciphertext), c => c.charCodeAt(0)),
+        };
+      } catch {
+        setError('Corrupt encrypted private key.');
+        setLoading(false);
+        return;
+      }
+      // Unlock private key using phrase
+      const { unlockPrivateKeyFromPhrase } = await import('@/lib/e2ee');
+      let e2eeKeys;
+      try {
+        e2eeKeys = await unlockPrivateKeyFromPhrase(phrase, canonizeUsername(username) || username, encryptedObj);
+      } catch {
+        setError('Incorrect recovery phrase.');
+        snackbar.show('Incorrect recovery phrase.', 'error');
+        setLoading(false);
+        return;
+      }
+      // Store keys in encryption store
+      const { useEncryption } = require('@/store/encryption');
+      useEncryption.getState().setKeyPair(
+        btoa(String.fromCharCode(...e2eeKeys.publicKey)),
+        btoa(String.fromCharCode(...e2eeKeys.privateKey))
+      );
+      useEncryption.getState().setEncryptionKey(null); // Not used in new flow
+      useEncryption.getState().isUnlocked = true;
+      setStep('done');
+    } catch (e: any) {
+      setError('Login failed: ' + (e?.message || 'Unknown error'));
+      snackbar.show('Login failed: ' + (e?.message || 'Unknown error'), 'error');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Signup: username/password, then E2EE keypair and encrypted private key
   const handleSignup = async () => {
     setLoading(true);
     setError('');
@@ -70,28 +137,34 @@ export default function AuthPhraseInputOrGen() {
       const userId = ID.unique();
       // Use username-based email
       const email = usernameToEmail(username);
-      // Derive a strong password from phrase for Appwrite
-      const derivedPassword = derivePasswordFromPhrase(phrase, username);
+      // Prompt for password (could be from another panel or state)
+      let password = '';
+      if (typeof window !== 'undefined') {
+        password = window.prompt('Set a password for ' + username + ':', '') || '';
+      }
+      if (!password) {
+        setError('Password is required.');
+        setLoading(false);
+        return;
+      }
       // Create Appwrite account and session
-      const { session, account: createdAccount } = await signupEmailPassword(email, derivedPassword, username, userId);
-      // Derive encryption key from mnemonic
-      const encryptionKey = await deriveEncryptionKey(phrase, canonizeUsername(username) || username);
-      // Store encryption key in session state
-      const { useEncryption } = require('@/store/encryption');
-      useEncryption.getState().setEncryptionKey(encryptionKey);
-      // For now, just use the encryptionKey as both publicKey and encryptedPrivateKey (stub)
-      const { publicKey, encryptedPrivateKey } = {
-        publicKey: encryptionKey,
-        encryptedPrivateKey: encryptionKey,
-      };
+      await signupEmailPassword(email, password, username, userId);
+      // Generate E2EE keypair and encrypt private key with phrase
+      const { createE2EEKeysAndEncryptPrivateKey } = await import('@/lib/e2ee');
+      const { publicKey, encryptedPrivateKey } = await createE2EEKeysAndEncryptPrivateKey(phrase, canonizeUsername(username) || username);
+      // Store as base64-encoded JSON
+      const encryptedPrivateKeyJson = JSON.stringify({
+        nonce: btoa(String.fromCharCode(...encryptedPrivateKey.nonce)),
+        ciphertext: btoa(String.fromCharCode(...encryptedPrivateKey.ciphertext)),
+      });
       // Create user profile in database
       await createUserProfile({
         userId,
         username,
         displayName: username,
         email,
-        publicKey,
-        encryptedPrivateKey,
+        publicKey: btoa(String.fromCharCode(...publicKey)),
+        encryptedPrivateKey: encryptedPrivateKeyJson,
       });
       // --- Create username doc in usernames collection ---
       try {
@@ -105,88 +178,6 @@ export default function AuthPhraseInputOrGen() {
       const msg = `Failed to create account: ${stringifyError(err)}`;
       setError(msg);
       snackbar.show(msg, 'error');
-    } finally {
-      setLoading(false);
-    }
-  };
-    setLoading(true);
-    setError('');
-    try {
-      // Check if username already exists
-      const existingUser = await findUserByUsername(username);
-      if (existingUser) {
-        setError('Username already exists. Please choose another.');
-        snackbar.show('Username already exists. Please choose another.', 'error');
-        setLoading(false);
-        return;
-      }
-      // Generate unique user ID
-      const userId = ID.unique();
-      // Use username-based email
-      const email = usernameToEmail(username);
-      // Derive a strong password from phrase for Appwrite
-      const derivedPassword = derivePasswordFromPhrase(phrase, username);
-      // Create Appwrite account and session
-      const { session, account: createdAccount } = await signupEmailPassword(email, derivedPassword, username, userId);
-      // Derive encryption key from mnemonic
-      const encryptionKey = await deriveEncryptionKey(phrase, canonizeUsername(username) || username);
-      // Store encryption key in session state
-      const { useEncryption } = require('@/store/encryption');
-      useEncryption.getState().setEncryptionKey(encryptionKey);
-      // For now, just use the encryptionKey as both publicKey and encryptedPrivateKey (stub)
-      const { publicKey, encryptedPrivateKey } = {
-        publicKey: encryptionKey,
-        encryptedPrivateKey: encryptionKey,
-      };
-      // Create user profile in database
-      await createUserProfile({
-        userId,
-        username,
-        displayName: username,
-        email,
-        publicKey,
-        encryptedPrivateKey,
-      });
-      // Create username doc in usernames collection
-      try {
-        const { createUsernameDoc } = await import('@/lib/appwrite');
-        await createUsernameDoc({ username, userId });
-      } catch (err) {
-        snackbar.show('Warning: Could not reserve username. Signup succeeded, but username may not be unique.', 'warning');
-      }
-      setStep('done');
-    } catch (err: any) {
-      const msg = `Failed to create account: ${stringifyError(err)}`;
-      setError(msg);
-      snackbar.show(msg, 'error');
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  // Login: create session
-  const handleLogin = async () => {
-    setLoading(true);
-    setError('');
-    try {
-      const user = await findUserByUsername(username);
-      if (!user) {
-        setError('Username does not exist.');
-        snackbar.show('Username does not exist.', 'error');
-        setLoading(false);
-        return;
-      }
-      const email = usernameToEmail(username);
-      const derivedPassword = derivePasswordFromPhrase(phrase, username);
-      await loginEmailPassword(email, derivedPassword);
-      // Derive encryption key and store in session (for message decryption)
-      const encryptionKey = await deriveEncryptionKey(phrase, canonizeUsername(username) || username);
-      const { useEncryption } = require('@/store/encryption');
-      useEncryption.getState().setEncryptionKey(encryptionKey);
-      setStep('done');
-    } catch (e: any) {
-      setError('Invalid recovery phrase or account.');
-      snackbar.show('Invalid recovery phrase or account.', 'error');
     } finally {
       setLoading(false);
     }
