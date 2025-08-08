@@ -33,7 +33,7 @@ export default function RegisterPanel() {
       const userId = ID.unique();
       await signupEmailPassword(username + '@users.noreply.whisperrchat.space', password, username, userId);
       setUsername(username);
-      setStep('phrase'); // Next: phrase generation for E2EE
+      setStep('done'); // Next: phrase generation for E2EE
       snackbar.show('Account created! Please set up your recovery phrase.', 'success');
     } catch (err: any) {
       setError(err?.message || 'Signup failed');

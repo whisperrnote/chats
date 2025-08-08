@@ -22,7 +22,7 @@ export default function AuthShowPhrase() {
       const { publicKey, encryptedPrivateKey } = await createE2EEKeysAndEncryptPrivateKey(phrase, username);
       // Update user profile in backend (assume userId is available in session or context)
       // TODO: get userId from session or context
-      const userId = undefined; // <-- Replace with actual userId
+      const userId = getCurrentUserId();
       await updateUser(userId, {
         publicKey: Buffer.from(publicKey).toString('base64'),
         encryptedPrivateKey: {
@@ -30,7 +30,7 @@ export default function AuthShowPhrase() {
           ciphertext: Buffer.from(encryptedPrivateKey.ciphertext).toString('base64'),
         },
       });
-      setStep('passcode');
+      setStep('done');
       snackbar.show('Encryption keys set up! Your data is now end-to-end encrypted.', 'success');
     } catch (err: any) {
       setError(err?.message || 'Failed to set up encryption keys');

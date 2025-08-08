@@ -4,7 +4,6 @@ import { useEffect } from 'react';
 import { motion } from 'framer-motion';
 import Image from 'next/image';
 
-import AuthPasscodeInput from '@/components/auth/AuthPasscodeInput';
 import AuthPhraseInputOrGen from '@/components/auth/AuthPhraseInputOrGen';
 import AuthShowPhrase from '@/components/auth/AuthShowPhrase';
 import AuthUsernameInput from '@/components/auth/AuthUsernameInput';
@@ -73,7 +72,7 @@ export default function AuthPage() {
 
   const panelVariants = {
     initial: { opacity: 0, y: 40 },
-    animate: { opacity: 1, y: 0, transition: { type: 'spring', duration: 0.6 } }
+    animate: { opacity: 1, y: 0, transition: { duration: 0.6 } }
   };
 
   // Use only brown shades for backgrounds
@@ -111,9 +110,8 @@ export default function AuthPage() {
               {step === 'username' && (
                 <AuthUsernameInput />
               )}
-              {step === 'phrase' && <AuthPhraseInputOrGen />}
-              {step === 'showPhrase' && <AuthShowPhrase />}
-              {step === 'passcode' && <AuthPasscodeInput />}
+              
+              
             </Box>
           </motion.div>
         </Container>

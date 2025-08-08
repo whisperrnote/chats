@@ -11,9 +11,8 @@ type AuthFlowState = {
   setPhraseType: (v: 12 | 24 | null) => void;
   phrase: string;
   setPhrase: (v: string) => void;
-  passcode: string;
-  setPasscode: (v: string) => void;
-  step: 'username' | 'phrase' | 'showPhrase' | 'passcode' | 'done';
+
+  step: 'username' | 'done';
   setStep: (v: AuthFlowState['step']) => void;
   error: string;
   setError: (v: string) => void;
@@ -30,9 +29,8 @@ export const useAuthFlow = create<AuthFlowState>(set => ({
   setPhraseType: phraseType => set({ phraseType }),
   phrase: '',
   setPhrase: phrase => set({ phrase }),
-  passcode: '',
-  setPasscode: passcode => set({ passcode }),
-  step: 'username',
+  
+  step: 'username', // valid steps: 'username', 'done'
   setStep: step => set({ step }),
   error: '',
   setError: error => set({ error }),

@@ -1,5 +1,5 @@
 'use client';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { Typography, TextField, Button, CircularProgress } from '@mui/material';
 import { motion } from 'framer-motion';
 import { useAuthFlow } from '@/store/authFlow';
@@ -46,10 +46,9 @@ export default function AuthUsernameInput() {
         sx={{ mb: 2 }}
       />
       {loading && <CircularProgress size={24} />}
-      {usernameExists === true && (
-        <Typography color="primary" sx={{ mt: 1 }}>Username found. Please enter your recovery phrase.</Typography>
-      )}
-      {usernameExists === false && (
+{usernameExists === true && (
+          <Typography color="primary" sx={{ mt: 1 }}>Username found. Please enter your password.</Typography>
+        )}      {usernameExists === false && (
         <Typography color="secondary" sx={{ mt: 1 }}>Username not found. Create a new account.</Typography>
       )}
       {error && <Typography color="error">{error}</Typography>}
@@ -57,7 +56,7 @@ export default function AuthUsernameInput() {
         <Button
           variant="contained"
           sx={{ mt: 2 }}
-          onClick={() => setStep('phrase')}
+          onClick={() => setStep('done')}
           disabled={loading || !username}
         >
           Continue
