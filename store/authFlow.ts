@@ -12,7 +12,7 @@ type AuthFlowState = {
   phrase: string;
   setPhrase: (v: string) => void;
 
-  step: 'username' | 'phrase' | 'done';
+  step: 'username' | 'phrase' | 'showPhrase' | 'done';
   setStep: (v: AuthFlowState['step']) => void;
   error: string;
   setError: (v: string) => void;

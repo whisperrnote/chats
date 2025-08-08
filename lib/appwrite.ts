@@ -224,26 +224,20 @@ export async function createUserProfile({
   
   try {
     // Do not include $id or any Appwrite system fields in the data object
-    const data = {
+    const data: Record<string, any> = {
       userId,
       username: canonizeUsername(username),
-      displayName,
-      email,
       publicKey,
-      encryptedPrivateKey,
       createdAt: now,
-      lastSeen: now,
       status: 'offline',
-      credibilityTier: 'bronze',
-      credibilityScore: 100,
-      twoFactorEnabled: false,
-      emailVerified: false,
-      phoneVerified: false,
-      encryptionKeyExported: false,
-      recoveryPhraseBackedUp: false,
-      deleted: false,
     };
-    return await databases.createDocument(DB_CORE, COLLECTIONS.USERS, userId, data);
+    if (displayName) data.displayName = displayName;
+    if (email) data.email = email;
+    if (encryptedPrivateKey) data.encryptedPrivateKey = encryptedPrivateKey;
+    // Only include fields that are in appwrite.json schema
+
+    const cleanData = (await import('./utils')).stripAppwriteSystemFields(data);
+    return await databases.createDocument(DB_CORE, COLLECTIONS.USERS, userId, cleanData);
   } catch (error) {
     console.error('Error creating user profile:', error);
     throw error;
@@ -251,7 +245,8 @@ export async function createUserProfile({
 }
 
 export async function createUser(data: Partial<Types.Users>, userId: string = ID.unique()) {
-  return databases.createDocument(DB_CORE, COLLECTIONS.USERS, userId, data);
+  const cleanData = (await import('./utils')).stripAppwriteSystemFields(data);
+  return databases.createDocument(DB_CORE, COLLECTIONS.USERS, userId, cleanData);
 }
 export async function getUser(userId: string): Promise<Types.Users> {
   return databases.getDocument(DB_CORE, COLLECTIONS.USERS, userId) as Promise<Types.Users>;
@@ -289,7 +284,8 @@ export async function createUsernameDoc({ username, userId }: { username: string
     userId,
     createdAt: now
   };
-  return databases.createDocument(DB_CORE, COLLECTIONS.USERNAMES, ID.unique(), data);
+  const cleanData = (await import('./utils')).stripAppwriteSystemFields(data);
+  return databases.createDocument(DB_CORE, COLLECTIONS.USERNAMES, ID.unique(), cleanData);
 }
 
 export async function getUsernameDoc(username: string) {
@@ -299,7 +295,8 @@ export async function getUsernameDoc(username: string) {
   return res.documents[0] || null;
 }
 export async function updateUsernameDoc(usernameId: string, data: any) {
-  return databases.updateDocument(DB_CORE, COLLECTIONS.USERNAMES, usernameId, data);
+  const cleanData = (await import('./utils')).stripAppwriteSystemFields(data);
+  return databases.updateDocument(DB_CORE, COLLECTIONS.USERNAMES, usernameId, cleanData);
 }
 export async function listUsernames(queries: any[] = []) {
   return databases.listDocuments(DB_CORE, COLLECTIONS.USERNAMES, queries);
@@ -307,13 +304,15 @@ export async function listUsernames(queries: any[] = []) {
 
 // --- CHATS ---
 export async function createChat(data: Partial<Types.Chats>, chatId: string = ID.unique()) {
-  return databases.createDocument(DB_CORE, COLLECTIONS.CHATS, chatId, data);
+  const cleanData = (await import('./utils')).stripAppwriteSystemFields(data);
+  return databases.createDocument(DB_CORE, COLLECTIONS.CHATS, chatId, cleanData);
 }
 export async function getChat(chatId: string): Promise<Types.Chats> {
   return databases.getDocument(DB_CORE, COLLECTIONS.CHATS, chatId) as Promise<Types.Chats>;
 }
 export async function updateChat(chatId: string, data: Partial<Types.Chats>) {
-  return databases.updateDocument(DB_CORE, COLLECTIONS.CHATS, chatId, data);
+  const cleanData = (await import('./utils')).stripAppwriteSystemFields(data);
+  return databases.updateDocument(DB_CORE, COLLECTIONS.CHATS, chatId, cleanData);
 }
 export async function deleteChat(chatId: string) {
   return databases.deleteDocument(DB_CORE, COLLECTIONS.CHATS, chatId);
@@ -333,10 +332,12 @@ export async function searchChatsByTitle(userId: string, searchTerm: string) {
 
 // --- CHAT MEMBERS ---
 export async function addChatMember(data: Partial<Types.ChatMembers>, chatMemberId: string = ID.unique()) {
-  return databases.createDocument(DB_CORE, COLLECTIONS.CHATMEMBERS, chatMemberId, data);
+  const cleanData = (await import('./utils')).stripAppwriteSystemFields(data);
+  return databases.createDocument(DB_CORE, COLLECTIONS.CHATMEMBERS, chatMemberId, cleanData);
 }
 export async function updateChatMember(chatMemberId: string, data: Partial<Types.ChatMembers>) {
-  return databases.updateDocument(DB_CORE, COLLECTIONS.CHATMEMBERS, chatMemberId, data);
+  const cleanData = (await import('./utils')).stripAppwriteSystemFields(data);
+  return databases.updateDocument(DB_CORE, COLLECTIONS.CHATMEMBERS, chatMemberId, cleanData);
 }
 export async function removeChatMember(chatMemberId: string) {
   return databases.deleteDocument(DB_CORE, COLLECTIONS.CHATMEMBERS, chatMemberId);
@@ -350,13 +351,15 @@ export async function listUserChatMemberships(userId: string) {
 
 // --- MESSAGES ---
 export async function createMessage(data: Partial<Types.Messages>, messageId: string = ID.unique()) {
-  return databases.createDocument(DB_CORE, COLLECTIONS.MESSAGES, messageId, data);
+  const cleanData = (await import('./utils')).stripAppwriteSystemFields(data);
+  return databases.createDocument(DB_CORE, COLLECTIONS.MESSAGES, messageId, cleanData);
 }
 export async function getMessage(messageId: string): Promise<Types.Messages> {
   return databases.getDocument(DB_CORE, COLLECTIONS.MESSAGES, messageId) as Promise<Types.Messages>;
 }
 export async function updateMessage(messageId: string, data: Partial<Types.Messages>) {
-  return databases.updateDocument(DB_CORE, COLLECTIONS.MESSAGES, messageId, data);
+  const cleanData = (await import('./utils')).stripAppwriteSystemFields(data);
+  return databases.updateDocument(DB_CORE, COLLECTIONS.MESSAGES, messageId, cleanData);
 }
 export async function deleteMessage(messageId: string) {
   return databases.deleteDocument(DB_CORE, COLLECTIONS.MESSAGES, messageId);
@@ -382,10 +385,12 @@ export async function searchMessages(chatId: string, searchTerm: string) {
 
 // --- CONTACTS ---
 export async function addContact(data: Partial<Types.Contacts>, contactId: string = ID.unique()) {
-  return databases.createDocument(DB_CORE, COLLECTIONS.CONTACTS, contactId, data);
+  const cleanData = (await import('./utils')).stripAppwriteSystemFields(data);
+  return databases.createDocument(DB_CORE, COLLECTIONS.CONTACTS, contactId, cleanData);
 }
 export async function updateContact(contactId: string, data: Partial<Types.Contacts>) {
-  return databases.updateDocument(DB_CORE, COLLECTIONS.CONTACTS, contactId, data);
+  const cleanData = (await import('./utils')).stripAppwriteSystemFields(data);
+  return databases.updateDocument(DB_CORE, COLLECTIONS.CONTACTS, contactId, cleanData);
 }
 export async function deleteContact(contactId: string) {
   return databases.deleteDocument(DB_CORE, COLLECTIONS.CONTACTS, contactId);
@@ -396,10 +401,12 @@ export async function listContacts(ownerId: string) {
 
 // --- DEVICES ---
 export async function addDevice(data: Partial<Types.Devices>, deviceId: string = ID.unique()) {
-  return databases.createDocument(DB_CORE, COLLECTIONS.DEVICES, deviceId, data);
+  const cleanData = (await import('./utils')).stripAppwriteSystemFields(data);
+  return databases.createDocument(DB_CORE, COLLECTIONS.DEVICES, deviceId, cleanData);
 }
 export async function updateDevice(deviceId: string, data: Partial<Types.Devices>) {
-  return databases.updateDocument(DB_CORE, COLLECTIONS.DEVICES, deviceId, data);
+  const cleanData = (await import('./utils')).stripAppwriteSystemFields(data);
+  return databases.updateDocument(DB_CORE, COLLECTIONS.DEVICES, deviceId, cleanData);
 }
 export async function deleteDevice(deviceId: string) {
   return databases.deleteDocument(DB_CORE, COLLECTIONS.DEVICES, deviceId);
