@@ -212,7 +212,7 @@ export async function createUserProfile({
   email,
   publicKey,
   encryptedPrivateKey,
-  status = 'offline',
+  status,
 }: {
   userId: string;
   username: string;
@@ -223,7 +223,13 @@ export async function createUserProfile({
   status?: string;
 }) {
   const now = new Date().toISOString();
-  
+
+  // Always set status to 'offline' if missing
+  if (!status) {
+    console.warn('No status provided to createUserProfile, defaulting to offline');
+    status = 'offline';
+  }
+
   try {
     // Do not include $id or any Appwrite system fields in the data object
     const data: Record<string, any> = {
@@ -231,7 +237,7 @@ export async function createUserProfile({
       username: canonizeUsername(username),
       publicKey,
       createdAt: now,
-      status: status || 'offline',
+      status,
     };
     if (displayName) data.displayName = displayName;
     if (email) data.email = email;
@@ -248,7 +254,11 @@ export async function createUserProfile({
 
 export async function createUser(data: Partial<Types.Users>, userId: string = ID.unique()) {
   // Always set status to 'offline' if not provided
-  const userData = { ...data, status: data.status || 'offline' };
+  if (!data.status) {
+    console.warn('No status provided to createUser, defaulting to offline');
+    data.status = 'offline';
+  }
+  const userData = { ...data };
   const cleanData = (await import('./utils')).stripAppwriteSystemFields(userData);
   return databases.createDocument(DB_CORE, COLLECTIONS.USERS, userId, cleanData);
 }
