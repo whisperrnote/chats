@@ -5,6 +5,7 @@ import { useTheme } from '@/store/theme';
 import { createAppTheme } from '@/theme/theme';
 import PatternBackground from '@/components/ui/PatternBackground';
 import { AnimationProvider } from './AnimationProvider';
+import { SnackbarProvider } from './SnackbarProvider';
 
 export default function AppProviders({ children }: { children: React.ReactNode }) {
   const { currentTheme } = useTheme();
@@ -13,11 +14,12 @@ export default function AppProviders({ children }: { children: React.ReactNode }
   return (
     <ThemeProvider theme={theme}>
       <CssBaseline />
-      <AnimationProvider>
-        <PatternBackground>
-          {children}
-        </PatternBackground>
-      </AnimationProvider>
-    </ThemeProvider>
-  );
+      <SnackbarProvider>
+        <AnimationProvider>
+          <PatternBackground>
+            {children}
+          </PatternBackground>
+        </AnimationProvider>
+      </SnackbarProvider>
+    </ThemeProvider>  );
 }

@@ -25,8 +25,10 @@ import {
   generateRecoveryPhrase,
 } from '@/lib/phrase';
 import { useAuthFlow } from '@/store/authFlow';
+import { useSnackbar } from '@/components/providers/SnackbarProvider';
 
 export default function AuthPhraseInputOrGen() {
+  const snackbar = require('@/components/providers/SnackbarProvider').useSnackbar();
   // Use auth flow store for all state
   const {
     username, setUsername,
