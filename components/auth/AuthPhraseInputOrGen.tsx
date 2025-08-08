@@ -69,41 +69,20 @@ export default function AuthPhraseInputOrGen() {
       const email = usernameToEmail(username);
       await loginEmailPassword(email, password);
       const freshUser = await findUserByUsername(username);
-      if (!freshUser || !freshUser.encryptedPrivateKey || !freshUser.publicKey) {
-        setError('User profile missing encryption keys.');
-        snackbar.show('User profile missing encryption keys.', 'error');
+      if (!freshUser || !freshUser.encryptedPrivateKey) {
+        setError('User profile missing encrypted username.');
+        snackbar.show('User profile missing encrypted username.', 'error');
         setLoading(false);
         return;
       }
-      let encryptedObj;
-      try {
-        const enc = JSON.parse(freshUser.encryptedPrivateKey);
-        encryptedObj = {
-          nonce: Uint8Array.from(atob(enc.nonce), c => c.charCodeAt(0)),
-          ciphertext: Uint8Array.from(atob(enc.ciphertext), c => c.charCodeAt(0)),
-        };
-      } catch {
-        setError('Corrupt encrypted private key.');
-        setLoading(false);
-        return;
-      }
-      const { unlockPrivateKeyFromPhrase } = await import('@/lib/e2ee');
-      let e2eeKeys;
-      try {
-        e2eeKeys = await unlockPrivateKeyFromPhrase(phrase, canonizeUsername(username) || username, encryptedObj);
-      } catch {
+      const { verifyPhraseWithEncryptedUsername } = await import('@/lib/e2ee');
+      const isValid = await verifyPhraseWithEncryptedUsername(phrase, canonizeUsername(username) || username, freshUser.encryptedPrivateKey);
+      if (!isValid) {
         setError('Incorrect recovery phrase.');
         snackbar.show('Incorrect recovery phrase.', 'error');
         setLoading(false);
         return;
       }
-      const { useEncryption } = require('@/store/encryption');
-      useEncryption.getState().setKeyPair(
-        btoa(String.fromCharCode(...e2eeKeys.publicKey)),
-        btoa(String.fromCharCode(...e2eeKeys.privateKey))
-      );
-      useEncryption.getState().setEncryptionKey(null);
-      useEncryption.getState().isUnlocked = true;
       setStep('done');
     } catch (e: any) {
       setError('Login failed: ' + (e?.message || 'Unknown error'));
@@ -136,19 +115,15 @@ export default function AuthPhraseInputOrGen() {
         return;
       }
       await signupEmailPassword(email, password, username, userId);
-      const { createE2EEKeysAndEncryptPrivateKey } = await import('@/lib/e2ee');
-      const { publicKey, encryptedPrivateKey } = await createE2EEKeysAndEncryptPrivateKey(phrase, canonizeUsername(username) || username);
-      const encryptedPrivateKeyJson = JSON.stringify({
-        nonce: btoa(String.fromCharCode(...encryptedPrivateKey.nonce)),
-        ciphertext: btoa(String.fromCharCode(...encryptedPrivateKey.ciphertext)),
-      });
+      const { createE2EEKeysAndEncryptUsername } = await import('@/lib/e2ee');
+      const { encryptedUsername } = await createE2EEKeysAndEncryptUsername(phrase, canonizeUsername(username) || username);
       await createUserProfile({
         userId,
         username,
         displayName: username,
         email,
-        publicKey: btoa(String.fromCharCode(...publicKey)),
-        encryptedPrivateKey: encryptedPrivateKeyJson,
+        publicKey: '', // Not used
+        encryptedPrivateKey: encryptedUsername,
         status: 'offline',
       });
       try {

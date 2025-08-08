@@ -23,27 +23,41 @@ export type E2EEKeys = {
 };
 
 // --- Signup: Generate keys and encrypt private key with phrase ---
-export async function createE2EEKeysAndEncryptPrivateKey(phrase: string, salt: string) {
-  const { privateKey, publicKey } = await generateKeypair();
-  const kdfKey = await deriveKeyFromPhrase(phrase, salt);
-  const { nonce, ciphertext } = encryptPrivateKey(privateKey, kdfKey);
+// Instead of generating a keypair, just encrypt the username with the phrase-derived key
+export async function createE2EEKeysAndEncryptUsername(phrase: string, username: string) {
+  const kdfKey = await deriveKeyFromPhrase(phrase, username);
+  const { nonce, ciphertext } = encryptAESGCM(kdfKey, strToUint8(username));
+  // Store as base64 string for Appwrite
   return {
-    publicKey,
-    encryptedPrivateKey: { nonce, ciphertext }
+    encryptedUsername: JSON.stringify({
+      nonce: Buffer.from(nonce).toString('base64'),
+      ciphertext: Buffer.from(ciphertext).toString('base64'),
+    })
   };
 }
 
 // --- Login: Unlock private key with phrase ---
-export async function unlockPrivateKeyFromPhrase(
+// Decrypt the encrypted username and check if it matches
+export async function verifyPhraseWithEncryptedUsername(
   phrase: string,
-  salt: string,
-  encrypted: EncryptedPrivateKey
-): Promise<E2EEKeys> {
-  const kdfKey = await deriveKeyFromPhrase(phrase, salt);
-  const privateKey = decryptPrivateKey(kdfKey, encrypted.nonce, encrypted.ciphertext);
-  // Public key can be derived from private key
-  const publicKey = await generatePublicKey(privateKey);
-  return { privateKey, publicKey };
+  username: string,
+  encrypted: string
+): Promise<boolean> {
+  const kdfKey = await deriveKeyFromPhrase(phrase, username);
+  let parsed;
+  try {
+    parsed = JSON.parse(encrypted);
+  } catch {
+    return false;
+  }
+  const nonce = Buffer.from(parsed.nonce, 'base64');
+  const ciphertext = Buffer.from(parsed.ciphertext, 'base64');
+  try {
+    const decrypted = decryptAESGCM(kdfKey, nonce, ciphertext);
+    return uint8ToStr(decrypted) === username;
+  } catch {
+    return false;
+  }
 }
 
 // --- Utility: Derive public key from private key ---
