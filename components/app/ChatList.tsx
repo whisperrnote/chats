@@ -48,7 +48,7 @@ export default function ChatList() {
 
   if (isMobile) {
     return (
-      <Box sx={{ width: '100vw', height: '100%', bgcolor: 'background.paper', borderRight: 1, borderColor: 'divider', display: 'flex', flexDirection: 'column', position: 'relative' }}>
+      <Box sx={{ flex: 1, height: '100%', bgcolor: 'background.paper', borderRight: 1, borderColor: 'divider', display: 'flex', flexDirection: 'column', position: 'relative' }}>
         <Box sx={{ p: 2 }}>
           <InputBase
             placeholder="Search chats"

@@ -38,27 +38,22 @@ export default function AppShell() {
         transition={{ duration: 0.4, ease: 'easeOut' }}
       >
         <Box
-          sx={{
-            display: 'flex',
-            flexDirection: 'column',
-            height: '100vh',
-            bgcolor: 'background.default',
-            borderRadius: 0,
-            overflow: 'hidden',
+           sx={{
+             display: 'flex',
+             flexDirection: 'row',
+             height: '100vh',
+             bgcolor: 'background.default',
+             borderRadius: 0,            overflow: 'hidden',
             boxShadow: theme.shadows[8],
             border: `1px solid ${theme.palette.divider}`,
           }}
         >
-          <Sidebar />
-          {activeMobileView === 'chat' && (
-            <Box sx={{ flex: 1, display: 'flex', flexDirection: 'column', height: '100%' }}>
-              <ChatList />
-              <ChatWindow />
-            </Box>
-          )}
-          {activeMobileView === 'profile' && <ProfilePanel isMobile={true} />}
-          {activeMobileView === 'extensions' && <ExtensionPanel isMobile={true} />}
-        </Box>
+           <Sidebar />
+           <Box sx={{ flex: 1, height: '100%', display: 'flex', flexDirection: 'column' }}>
+             {activeMobileView === 'chat' && <><ChatList /><ChatWindow /></>}
+             {activeMobileView === 'profile' && <ProfilePanel isMobile={true} />}
+             {activeMobileView === 'extensions' && <ExtensionPanel isMobile={true} />}
+           </Box>        </Box>
       </motion.div>
     );
   }
