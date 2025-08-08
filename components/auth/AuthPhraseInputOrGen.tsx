@@ -27,11 +27,9 @@ import {
 import { useAuthFlow } from '@/store/authFlow';
 import { useSnackbar } from '@/components/providers/SnackbarProvider';
 
-import { useSnackbar } from '@/components/providers/SnackbarProvider';
-
 export default function AuthPhraseInputOrGen() {
   const snackbar = useSnackbar();
-  const snackbar = require('@/components/providers/SnackbarProvider').useSnackbar();
+
   // Use auth flow store for all state
   const {
     username, setUsername,
@@ -64,6 +62,7 @@ export default function AuthPhraseInputOrGen() {
       const existingUser = await findUserByUsername(username);
       if (existingUser) {
         setError('Username already exists. Please choose another.');
+        snackbar.show('Username already exists. Please choose another.', 'error');
         setLoading(false);
         return;
       }
@@ -96,7 +95,9 @@ export default function AuthPhraseInputOrGen() {
       });
       setStep('done');
     } catch (err: any) {
-      setError(`Failed to create account: ${stringifyError(err)}`);
+      const msg = `Failed to create account: ${stringifyError(err)}`;
+      setError(msg);
+      snackbar.show(msg, 'error');
     } finally {
       setLoading(false);
     }
@@ -110,6 +111,7 @@ export default function AuthPhraseInputOrGen() {
       const user = await findUserByUsername(username);
       if (!user) {
         setError('Username does not exist.');
+        snackbar.show('Username does not exist.', 'error');
         setLoading(false);
         return;
       }
@@ -123,6 +125,7 @@ export default function AuthPhraseInputOrGen() {
       setStep('done');
     } catch (e: any) {
       setError('Invalid recovery phrase or account.');
+      snackbar.show('Invalid recovery phrase or account.', 'error');
     } finally {
       setLoading(false);
     }
