@@ -3,7 +3,8 @@ import { motion } from 'framer-motion';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 
-import ContinueButton from '@/components/ui/ContinueButton';
+import Avatar from '@/components/ui/Avatar';
+import { useAuth } from '@/store/auth';
 import Navigation from '@/components/ui/Navigation';
 import ThemeSwitcher from '@/components/ui/ThemeSwitcher';
 import { useAuthFlow } from '@/store/authFlow';
@@ -31,11 +32,7 @@ const GlassAppBar = styled(AppBar)(({ theme }) => ({
 
 export default function Topbar() {
   const router = useRouter();
-
-  // Get username from auth flow
-  let username = '';
-  const { username: authUsername } = useAuthFlow();
-  username = authUsername;
+  const { isAuthenticated, user, signOut } = useAuth();
 
   return (
     <motion.div
