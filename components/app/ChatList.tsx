@@ -70,21 +70,21 @@ export default function ChatList() {
             <ChatListSkeleton />
           ) : (
             chats.map(chat => (
-              <ListItem
-                key={chat.chatId}
-                selected={chat.chatId === selectedChatId}
-                onClick={() => selectChat(chat.chatId)}
-                button
-              >
-                <ListItemAvatar>
-                  <Badge color="primary" badgeContent={chat.unreadCount}>
-                    <Avatar src={chat.avatarUrl || undefined}>{chat.title?.[0]}</Avatar>
-                  </Badge>
-                </ListItemAvatar>
-                <ListItemText
-                  primary={chat.title}
-                  secondary={chat.lastMessagePreview}
-                />
+              <ListItem key={chat.chatId} disablePadding>
+                <ListItemButton
+                  selected={chat.chatId === selectedChatId}
+                  onClick={() => selectChat(chat.chatId)}
+                >
+                  <ListItemAvatar>
+                    <Badge color="primary" badgeContent={chat.unreadCount}>
+                      <Avatar src={chat.avatarUrl || undefined}>{chat.title?.[0]}</Avatar>
+                    </Badge>
+                  </ListItemAvatar>
+                  <ListItemText
+                    primary={chat.title}
+                    secondary={chat.lastMessagePreview}
+                  />
+                </ListItemButton>
               </ListItem>
             ))
           )}
