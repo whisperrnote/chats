@@ -272,6 +272,21 @@ setError(`Failed to create account: ${stringifyError(err)}`);
               </Button>
             </Box>
           )}
+           {step === 'showPhrase' && (
+            <Box sx={{ mb: 2, p: 2, bgcolor: 'background.paper', borderRadius: 2, border: '1px solid #eee', display: 'flex', alignItems: 'center' }}>
+              <Typography sx={{ color: '#000', fontWeight: 600, fontSize: 18, wordBreak: 'break-word', flex: 1 }}>
+                {phrase}
+              </Typography>
+              <Button
+                variant="outlined"
+                size="small"
+                sx={{ ml: 2 }}
+                onClick={() => { navigator.clipboard.writeText(phrase); }}
+              >
+                Copy
+              </Button>
+            </Box>
+          )}
           {phrase && (
             <Button
               variant="contained"
@@ -281,9 +296,7 @@ setError(`Failed to create account: ${stringifyError(err)}`);
             >
               {loading ? <CircularProgress size={20} /> : 'Sign Up'}
             </Button>
-          )}          {error && <Typography color="error">{error}</Typography>}
-        </>
-      )}
+          )}
     </motion.div>
   );
 }
