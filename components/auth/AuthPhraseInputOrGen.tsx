@@ -179,22 +179,24 @@ export default function AuthPhraseInputOrGen() {
           >
             Generate Phrase
           </Button>
-          {step === 'showPhrase' && (
-            <Box sx={{ mb: 2, p: 2, bgcolor: 'background.paper', borderRadius: 2, border: '1px solid #eee', display: 'flex', alignItems: 'center' }}>
-              <Typography sx={{ color: '#000', fontWeight: 600, fontSize: 18, wordBreak: 'break-word', flex: 1 }}>
-                {phrase}
-              </Typography>
-              <Button
-                variant="outlined"
-                size="small"
-                sx={{ ml: 2 }}
-                onClick={() => { navigator.clipboard.writeText(phrase); }}
-              >
-                Copy
-              </Button>
-            </Box>
-          )}
-          {phrase && (
+{step === 'showPhrase' && (
+  <Box sx={{ mb: 2 }}>
+    <Box sx={{ p: 2, bgcolor: '#fff', borderRadius: 2, border: '1px solid #eee', textAlign: 'left' }}>
+      <Typography sx={{ color: '#000', fontWeight: 600, fontSize: 18, wordBreak: 'break-word' }}>
+        {phrase}
+      </Typography>
+    </Box>
+    <Button
+      variant="outlined"
+      size="small"
+      sx={{ mt: 1 }}
+      onClick={() => { navigator.clipboard.writeText(phrase); }}
+      fullWidth
+    >
+      Copy
+    </Button>
+  </Box>
+)}          {phrase && (
             <Button
               variant="contained"
               sx={{ mt: 2 }}
