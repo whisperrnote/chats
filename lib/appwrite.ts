@@ -288,7 +288,7 @@ export async function findUserByEmail(email: string) {
 }
 
 // --- USERNAMES ---
-export async function createUsernameDoc({ username, userId }: { username: string; userId: string }) {
+export async function createUsernameDoc({ username, userId, status = 'active' }: { username: string; userId: string; status?: string }) {
   const canon = canonizeUsername(username);
   if (!canon) throw new Error('Invalid username');
   const now = new Date().toISOString();
@@ -296,7 +296,8 @@ export async function createUsernameDoc({ username, userId }: { username: string
   const data = {
     username: canon,
     userId,
-    createdAt: now
+    createdAt: now,
+    status: status || 'active',
   };
   const cleanData = (await import('./utils')).stripAppwriteSystemFields(data);
   return databases.createDocument(DB_CORE, COLLECTIONS.USERNAMES, ID.unique(), cleanData);

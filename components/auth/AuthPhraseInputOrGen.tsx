@@ -34,6 +34,7 @@ export default function AuthPhraseInputOrGen() {
     step, setStep,
     loading, setLoading
   } = useAuthFlow();
+  const [progress, setProgress] = React.useState<string>('');
 
   function stringifyError(err: any): string {
     if (!err) return 'Unknown error';
@@ -95,14 +96,17 @@ export default function AuthPhraseInputOrGen() {
   const handleSignup = async () => {
     setLoading(true);
     setError('');
+    setProgress('Checking username availability...');
     try {
       const existingUser = await findUserByUsername(username);
       if (existingUser) {
         setError('Username already exists. Please choose another.');
         snackbar.show('Username already exists. Please choose another.', 'error');
         setLoading(false);
+        setProgress('');
         return;
       }
+      setProgress('Creating account...');
       const userId = ID.unique();
       const email = usernameToEmail(username);
       let password = '';
@@ -112,11 +116,14 @@ export default function AuthPhraseInputOrGen() {
       if (!password) {
         setError('Password is required.');
         setLoading(false);
+        setProgress('');
         return;
       }
       await signupEmailPassword(email, password, username, userId);
+      setProgress('Encrypting recovery phrase...');
       const { createE2EEKeysAndEncryptUsername } = await import('@/lib/e2ee');
       const { encryptedUsername } = await createE2EEKeysAndEncryptUsername(phrase, canonizeUsername(username) || username);
+      setProgress('Saving user profile...');
       await createUserProfile({
         userId,
         username,
@@ -126,17 +133,21 @@ export default function AuthPhraseInputOrGen() {
         encryptedPrivateKey: encryptedUsername,
         status: 'offline',
       });
+      setProgress('Reserving username...');
       try {
         const { createUsernameDoc } = await import('@/lib/appwrite');
-        await createUsernameDoc({ username, userId });
+        await createUsernameDoc({ username, userId, status: 'active' });
       } catch (err) {
         snackbar.show('Warning: Could not reserve username. Signup succeeded, but username may not be unique.', 'warning');
       }
+      setProgress('Finishing up...');
       setStep('done');
+      setProgress('');
     } catch (err: any) {
       const msg = `Failed to create account: ${stringifyError(err)}`;
       setError(msg);
       snackbar.show(msg, 'error');
+      setProgress('');
     } finally {
       setLoading(false);
     }
@@ -151,84 +162,104 @@ export default function AuthPhraseInputOrGen() {
   };
 
   return (
-    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
-      {usernameExists ? (
-        <>
-          <Typography variant="h6" mb={2}>Enter your recovery phrase</Typography>
-          <TextField
-            label="Recovery Phrase"
-            value={phrase}
-            onChange={e => setPhrase(e.target.value)}
-            fullWidth
-            multiline
-            sx={{ mb: 2 }}
-            placeholder="Enter your 12 or 24 word phrase"
-          />
-          <Button
-            variant="contained"
-            onClick={handleLogin}
-            disabled={!phrase || loading}
-          >
-            {loading ? <CircularProgress size={20} /> : 'Login'}
-          </Button>
-          {error && <Typography color="error">{error}</Typography>}
-        </>
-      ) : (
-        <>
-          <Typography variant="h6" mb={2}>Select phrase type</Typography>
-          <ToggleButtonGroup
-            value={phraseType}
-            exclusive
-            onChange={handlePhraseTypeChange}
-            sx={{ mb: 2 }}
-          >
-            <ToggleButton value={12}>12 words</ToggleButton>
-            <ToggleButton value={24}>24 words</ToggleButton>
-          </ToggleButtonGroup>
-          <Button
-            variant="contained"
-            onClick={() => {
-              if (phraseType === 12 || phraseType === 24) {
-                const newPhrase = generateRecoveryPhrase(phraseType);
-                setPhrase(newPhrase);
-                setStep('showPhrase');
-              }
-            }}
-            disabled={!phraseType}
-          >
-            Generate Phrase
-          </Button>
-          {step === 'showPhrase' && (
-            <Box sx={{ mb: 2 }}>
-              <Box sx={{ p: 2, bgcolor: '#fff', borderRadius: 2, border: '1px solid #eee', textAlign: 'left' }}>
-                <Typography sx={{ color: '#000', fontWeight: 600, fontSize: 18, wordBreak: 'break-word' }}>
-                  {phrase}
-                </Typography>
-              </Box>
-              <Button
-                variant="outlined"
-                size="small"
-                sx={{ mt: 1 }}
-                onClick={() => { navigator.clipboard.writeText(phrase); }}
-                fullWidth
-              >
-                Copy
-              </Button>
-            </Box>
-          )}
-          {phrase && (
+    <>
+      {loading && (
+        <Box sx={{
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          width: '100vw',
+          height: '100vh',
+          bgcolor: 'rgba(255,255,255,0.85)',
+          zIndex: 9999,
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          justifyContent: 'center',
+        }}>
+          <CircularProgress size={48} sx={{ mb: 3 }} />
+          <Typography variant="h6" sx={{ mb: 1 }}>{progress || 'Setting up your account...'}</Typography>
+        </Box>
+      )}
+      <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
+        {usernameExists ? (
+          <>
+            <Typography variant="h6" mb={2}>Enter your recovery phrase</Typography>
+            <TextField
+              label="Recovery Phrase"
+              value={phrase}
+              onChange={e => setPhrase(e.target.value)}
+              fullWidth
+              multiline
+              sx={{ mb: 2 }}
+              placeholder="Enter your 12 or 24 word phrase"
+            />
             <Button
               variant="contained"
-              sx={{ mt: 2 }}
-              onClick={handleSignup}
+              onClick={handleLogin}
               disabled={!phrase || loading}
             >
-              {loading ? <CircularProgress size={20} /> : 'Sign Up'}
+              {loading ? <CircularProgress size={20} /> : 'Login'}
             </Button>
-          )}
-          {error && <Typography color="error">{error}</Typography>}
-        </>
-      )}
-    </motion.div>
+            {error && <Typography color="error">{error}</Typography>}
+          </>
+        ) : (
+          <>
+            <Typography variant="h6" mb={2}>Select phrase type</Typography>
+            <ToggleButtonGroup
+              value={phraseType}
+              exclusive
+              onChange={handlePhraseTypeChange}
+              sx={{ mb: 2 }}
+            >
+              <ToggleButton value={12}>12 words</ToggleButton>
+              <ToggleButton value={24}>24 words</ToggleButton>
+            </ToggleButtonGroup>
+            <Button
+              variant="contained"
+              onClick={() => {
+                if (phraseType === 12 || phraseType === 24) {
+                  const newPhrase = generateRecoveryPhrase(phraseType);
+                  setPhrase(newPhrase);
+                  setStep('showPhrase');
+                }
+              }}
+              disabled={!phraseType}
+            >
+              Generate Phrase
+            </Button>
+            {step === 'showPhrase' && (
+              <Box sx={{ mb: 2 }}>
+                <Box sx={{ p: 2, bgcolor: '#fff', borderRadius: 2, border: '1px solid #eee', textAlign: 'left' }}>
+                  <Typography sx={{ color: '#000', fontWeight: 600, fontSize: 18, wordBreak: 'break-word' }}>
+                    {phrase}
+                  </Typography>
+                </Box>
+                <Button
+                  variant="outlined"
+                  size="small"
+                  sx={{ mt: 1 }}
+                  onClick={() => { navigator.clipboard.writeText(phrase); }}
+                  fullWidth
+                >
+                  Copy
+                </Button>
+              </Box>
+            )}
+            {phrase && (
+              <Button
+                variant="contained"
+                sx={{ mt: 2 }}
+                onClick={handleSignup}
+                disabled={!phrase || loading}
+              >
+                {loading ? <CircularProgress size={20} /> : 'Sign Up'}
+              </Button>
+            )}
+            {error && <Typography color="error">{error}</Typography>}
+          </>
+        )}
+      </motion.div>
+    </>
   );
 }
