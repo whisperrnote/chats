@@ -95,7 +95,31 @@ export async function signupEmailPassword(
        console.error('account.createEmailPasswordSession threw:', err);
        throw err;
      }
-    
+
+     // Create user profile in users collection
+     try {
+       await createUserProfile({
+         userId: createdAccount.$id,
+         username: name,
+         displayName: name,
+         email,
+         publicKey: '', // TODO: Provide real publicKey if available
+         encryptedPrivateKey: '', // TODO: Provide real encryptedPrivateKey if available
+       });
+     } catch (err) {
+       console.error('Error creating user profile doc:', err);
+     }
+
+     // Create username doc in usernames collection
+     try {
+       await createUsernameDoc({
+         username: name,
+         userId: createdAccount.$id
+       });
+     } catch (err) {
+       console.error('Error creating username doc:', err);
+     }
+
      return { account: createdAccount, session, userId };  } catch (error: any) {
     console.error('Appwrite signup error:', error);
     console.error('Error details:', {
