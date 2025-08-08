@@ -1,5 +1,4 @@
 'use client';
-import { useState } from 'react';
 
 import { motion } from 'framer-motion';
 
@@ -30,6 +29,28 @@ import {
 
 
 export default function AuthPhraseInputOrGen() {
+  // Use auth flow store for all state
+  const {
+    username, setUsername,
+    phrase, setPhrase,
+    phraseType, setPhraseType,
+    usernameExists, setUsernameExists,
+    error, setError,
+    step, setStep,
+    loading, setLoading
+  } = useAuthFlow();
+
+  // Helper to stringify any error
+  function stringifyError(err: any): string {
+    if (!err) return 'Unknown error';
+    if (typeof err === 'string') return err;
+    if (err.message) return `${err.message}${err.code ? ` (code: ${err.code})` : ''}${err.type ? ` [${err.type}]` : ''}`;
+    try {
+      return JSON.stringify(err);
+    } catch {
+      return String(err);
+    }
+  }
 
   // Log all state values for debugging
   console.log('AuthPhraseInputOrGen state:', {
@@ -132,7 +153,17 @@ console.log('findUserByUsername result:', existingUser);
         type: err.type,
         stack: err.stack
       });
-      setError(`Failed to create account: ${err.message || 'Unknown error'}`);
+      function stringifyError(err: any): string {
+  if (!err) return 'Unknown error';
+  if (typeof err === 'string') return err;
+  if (err.message) return `${err.message}${err.code ? ` (code: ${err.code})` : ''}${err.type ? ` [${err.type}]` : ''}`;
+  try {
+    return JSON.stringify(err);
+  } catch {
+    return String(err);
+  }
+}
+setError(`Failed to create account: ${stringifyError(err)}`);
     } finally {
       setLoading(false);
     }
