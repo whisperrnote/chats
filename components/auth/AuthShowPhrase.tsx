@@ -4,7 +4,7 @@ import { motion } from 'framer-motion';
 import { useAuthFlow } from '@/store/authFlow';
 
 import { useState } from 'react';
-import { createE2EEKeysAndEncryptPrivateKey } from '@/lib/e2ee';
+import { createE2EEKeysAndEncryptUsername } from '@/lib/e2ee';
 import { updateUser, getCurrentUserId } from '@/lib/appwrite';
 import { useSnackbar } from '@/components/providers/SnackbarProvider';
 
@@ -19,21 +19,16 @@ export default function AuthShowPhrase() {
     setError('');
     try {
       // Use username as salt for KDF
-      const { publicKey, encryptedPrivateKey } = await createE2EEKeysAndEncryptPrivateKey(phrase, username);
+      const { encryptedUsername } = await createE2EEKeysAndEncryptUsername(phrase, username);
       // Update user profile in backend (assume userId is available in session or context)
       const userId = await getCurrentUserId();
       if (!userId) {
         throw new Error('User not authenticated');
       }
-      await updateUser(userId, {
-        publicKey: Buffer.from(publicKey).toString('base64'),
-        encryptedPrivateKey: {
-          nonce: Buffer.from(encryptedPrivateKey.nonce).toString('base64'),
-          ciphertext: Buffer.from(encryptedPrivateKey.ciphertext).toString('base64'),
-        },
-        recoveryPhraseBackedUp: true,
-      });
-      setStep('done');
+await updateUser(userId, {
+          encryptedPrivateKey: encryptedUsername, // stringified base64 nonce/ciphertext
+          recoveryPhraseBackedUp: true,
+        });      setStep('done');
       snackbar.show('Encryption keys set up! Your data is now end-to-end encrypted.', 'success');
     } catch (err: any) {
       setError(err?.message || 'Failed to set up encryption keys');
