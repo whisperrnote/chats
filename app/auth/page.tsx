@@ -86,11 +86,8 @@ export default function AuthPage() {
 
 
    // Redirect to /app after authentication is complete
-   const { isAuthenticated, isLoading, initializeAuth } = useAuth();
+   const { isAuthenticated, isLoading } = useAuth();
    const router = useRouter();
-   useEffect(() => {
-     initializeAuth();
-   }, [initializeAuth]);
    useEffect(() => {
      if (!isLoading && isAuthenticated) {
        router.replace('/app');

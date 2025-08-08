@@ -16,12 +16,8 @@ import { useRouter } from 'next/navigation';
 export default function AppShell() {
   const theme = useTheme();
   const { showProfile, showExtensions, isMobile } = useAppLayout();
-  const { isAuthenticated, isLoading, initializeAuth } = useAuth();
+  const { isAuthenticated, isLoading } = useAuth();
   const router = useRouter();
-
-  useEffect(() => {
-    initializeAuth();
-  }, [initializeAuth]);
 
   useEffect(() => {
     if (!isLoading && !isAuthenticated) {
