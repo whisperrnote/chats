@@ -85,18 +85,18 @@ export async function signupEmailPassword(
     const createdAccount = await account.create(userId, email, password, name);
     console.log('Account created successfully:', createdAccount);
     
-    // Then create session
-    console.log('Creating session...');
-    try {
-      const session = await account.createEmailPasswordSession(email, password);
-      console.log('Session created successfully:', session);
-    } catch (err) {
-      console.error('account.createEmailPasswordSession threw:', err);
-      throw err;
-    }
+     // Then create session
+     console.log('Creating session...');
+     let session;
+     try {
+       session = await account.createEmailPasswordSession(email, password);
+       console.log('Session created successfully:', session);
+     } catch (err) {
+       console.error('account.createEmailPasswordSession threw:', err);
+       throw err;
+     }
     
-    return { account: createdAccount, session, userId };
-  } catch (error: any) {
+     return { account: createdAccount, session, userId };  } catch (error: any) {
     console.error('Appwrite signup error:', error);
     console.error('Error details:', {
       message: error?.message,
