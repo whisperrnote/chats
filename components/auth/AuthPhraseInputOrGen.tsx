@@ -147,7 +147,7 @@ export default function AuthPhraseInputOrGen() {
           />
           <Button
             variant="contained"
-            onClick={e => { handleLogin(); }}
+            onClick={() => { handleLogin(); }}
             disabled={!phrase || loading}
           >
             {loading ? <CircularProgress size={20} /> : 'Login'}
@@ -179,28 +179,29 @@ export default function AuthPhraseInputOrGen() {
           >
             Generate Phrase
           </Button>
-{step === 'showPhrase' && (
-  <Box sx={{ mb: 2 }}>
-    <Box sx={{ p: 2, bgcolor: '#fff', borderRadius: 2, border: '1px solid #eee', textAlign: 'left' }}>
-      <Typography sx={{ color: '#000', fontWeight: 600, fontSize: 18, wordBreak: 'break-word' }}>
-        {phrase}
-      </Typography>
-    </Box>
-    <Button
-      variant="outlined"
-      size="small"
-      sx={{ mt: 1 }}
-      onClick={() => { navigator.clipboard.writeText(phrase); }}
-      fullWidth
-    >
-      Copy
-    </Button>
-  </Box>
-)}          {phrase && (
+          {step === 'showPhrase' && (
+            <Box sx={{ mb: 2 }}>
+              <Box sx={{ p: 2, bgcolor: '#fff', borderRadius: 2, border: '1px solid #eee', textAlign: 'left' }}>
+                <Typography sx={{ color: '#000', fontWeight: 600, fontSize: 18, wordBreak: 'break-word' }}>
+                  {phrase}
+                </Typography>
+              </Box>
+              <Button
+                variant="outlined"
+                size="small"
+                sx={{ mt: 1 }}
+                onClick={() => { navigator.clipboard.writeText(phrase); }}
+                fullWidth
+              >
+                Copy
+              </Button>
+            </Box>
+          )}
+          {phrase && (
             <Button
               variant="contained"
               sx={{ mt: 2 }}
-              onClick={e => { handleSignup(); }}
+              onClick={() => { handleSignup(); }}
               disabled={!phrase || loading}
             >
               {loading ? <CircularProgress size={20} /> : 'Sign Up'}
