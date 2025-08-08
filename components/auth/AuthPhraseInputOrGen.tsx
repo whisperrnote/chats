@@ -29,13 +29,12 @@ export default function AuthPhraseInputOrGen() {
     username, setUsername,
     phrase, setPhrase,
     phraseType, setPhraseType,
-    usernameExists, setUsernameExists,
+    usernameExists,
     error, setError,
     step, setStep,
     loading, setLoading
   } = useAuthFlow();
 
-  // Helper to stringify any error
   function stringifyError(err: any): string {
     if (!err) return 'Unknown error';
     if (typeof err === 'string') return err;
@@ -47,7 +46,6 @@ export default function AuthPhraseInputOrGen() {
     }
   }
 
-  // Login: username/password auth, then E2EE unlock
   const handleLogin = async () => {
     setLoading(true);
     setError('');
@@ -59,7 +57,6 @@ export default function AuthPhraseInputOrGen() {
         setLoading(false);
         return;
       }
-      // Prompt for password (could be from another panel or state)
       let password = '';
       if (typeof window !== 'undefined') {
         password = window.prompt('Enter your password for ' + username + ':', '') || '';
@@ -71,7 +68,6 @@ export default function AuthPhraseInputOrGen() {
       }
       const email = usernameToEmail(username);
       await loginEmailPassword(email, password);
-      // Fetch user profile again to get encryptedPrivateKey and publicKey
       const freshUser = await findUserByUsername(username);
       if (!freshUser || !freshUser.encryptedPrivateKey || !freshUser.publicKey) {
         setError('User profile missing encryption keys.');
@@ -79,7 +75,6 @@ export default function AuthPhraseInputOrGen() {
         setLoading(false);
         return;
       }
-      // Decode encryptedPrivateKey (base64 string) to {nonce, ciphertext}
       let encryptedObj;
       try {
         const enc = JSON.parse(freshUser.encryptedPrivateKey);
@@ -92,7 +87,6 @@ export default function AuthPhraseInputOrGen() {
         setLoading(false);
         return;
       }
-      // Unlock private key using phrase
       const { unlockPrivateKeyFromPhrase } = await import('@/lib/e2ee');
       let e2eeKeys;
       try {
@@ -103,13 +97,12 @@ export default function AuthPhraseInputOrGen() {
         setLoading(false);
         return;
       }
-      // Store keys in encryption store
       const { useEncryption } = require('@/store/encryption');
       useEncryption.getState().setKeyPair(
         btoa(String.fromCharCode(...e2eeKeys.publicKey)),
         btoa(String.fromCharCode(...e2eeKeys.privateKey))
       );
-      useEncryption.getState().setEncryptionKey(null); // Not used in new flow
+      useEncryption.getState().setEncryptionKey(null);
       useEncryption.getState().isUnlocked = true;
       setStep('done');
     } catch (e: any) {
@@ -120,12 +113,10 @@ export default function AuthPhraseInputOrGen() {
     }
   };
 
-  // Signup: username/password, then E2EE keypair and encrypted private key
   const handleSignup = async () => {
     setLoading(true);
     setError('');
     try {
-      // Check if username already exists
       const existingUser = await findUserByUsername(username);
       if (existingUser) {
         setError('Username already exists. Please choose another.');
@@ -133,11 +124,8 @@ export default function AuthPhraseInputOrGen() {
         setLoading(false);
         return;
       }
-      // Generate unique user ID
       const userId = ID.unique();
-      // Use username-based email
       const email = usernameToEmail(username);
-      // Prompt for password (could be from another panel or state)
       let password = '';
       if (typeof window !== 'undefined') {
         password = window.prompt('Set a password for ' + username + ':', '') || '';
@@ -147,17 +135,13 @@ export default function AuthPhraseInputOrGen() {
         setLoading(false);
         return;
       }
-      // Create Appwrite account and session
       await signupEmailPassword(email, password, username, userId);
-      // Generate E2EE keypair and encrypt private key with phrase
       const { createE2EEKeysAndEncryptPrivateKey } = await import('@/lib/e2ee');
       const { publicKey, encryptedPrivateKey } = await createE2EEKeysAndEncryptPrivateKey(phrase, canonizeUsername(username) || username);
-      // Store as base64-encoded JSON
       const encryptedPrivateKeyJson = JSON.stringify({
         nonce: btoa(String.fromCharCode(...encryptedPrivateKey.nonce)),
         ciphertext: btoa(String.fromCharCode(...encryptedPrivateKey.ciphertext)),
       });
-      // Create user profile in database
       await createUserProfile({
         userId,
         username,
@@ -166,7 +150,6 @@ export default function AuthPhraseInputOrGen() {
         publicKey: btoa(String.fromCharCode(...publicKey)),
         encryptedPrivateKey: encryptedPrivateKeyJson,
       });
-      // --- Create username doc in usernames collection ---
       try {
         const { createUsernameDoc } = await import('@/lib/appwrite');
         await createUsernameDoc({ username, userId });
@@ -207,7 +190,7 @@ export default function AuthPhraseInputOrGen() {
           />
           <Button
             variant="contained"
-            onClick={() => { handleLogin(); }}
+            onClick={handleLogin}
             disabled={!phrase || loading}
           >
             {loading ? <CircularProgress size={20} /> : 'Login'}
@@ -261,7 +244,7 @@ export default function AuthPhraseInputOrGen() {
             <Button
               variant="contained"
               sx={{ mt: 2 }}
-              onClick={() => { handleSignup(); }}
+              onClick={handleSignup}
               disabled={!phrase || loading}
             >
               {loading ? <CircularProgress size={20} /> : 'Sign Up'}
