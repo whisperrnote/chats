@@ -31,32 +31,18 @@ export default function PageClient() {
 
 
   useEffect(() => {
-    let shouldRedirect = false;
-    let checkedSession = false;
-
     async function checkAuth() {
-      // Use username from auth flow
-      const { username: authUsername } = useAuthFlow.getState();
-      if (authUsername) {
-        setUsername(authUsername);
-      } else {
-        shouldRedirect = true;
-      }
-
-      // Appwrite session check
       try {
-        await getCurrentAccount();
-        checkedSession = true;
+        await getCurrentAccount(); // Only check if user is authenticated
       } catch {
-        shouldRedirect = true;
+        router.push('/auth'); // Redirect only if not authenticated
+        return;
       }
-
-      if (shouldRedirect || !checkedSession) {
-        router.push('/auth');
-      }
+      // Optionally set username for greeting, but do not use for redirect
+      const { username: authUsername } = useAuthFlow.getState();
+      if (authUsername) setUsername(authUsername);
       setIsChecking(false);
     }
-
     checkAuth();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [router]);
