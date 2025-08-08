@@ -1,6 +1,6 @@
 'use client';
 import { useState } from 'react';
-import { Typography, TextField, Button, Link } from '@mui/material';
+import { Typography, TextField, Button, Link, Box } from '@mui/material';
 import { motion } from 'framer-motion';
 import { useAuthFlow } from '@/store/authFlow';
 import { useRouter } from 'next/navigation';

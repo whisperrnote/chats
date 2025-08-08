@@ -223,7 +223,8 @@ export async function createUserProfile({
   const now = new Date().toISOString();
   
   try {
-    return await databases.createDocument(DB_CORE, COLLECTIONS.USERS, userId, {
+    // Do not include $id or any Appwrite system fields in the data object
+    const data = {
       userId,
       username: canonizeUsername(username),
       displayName,
@@ -241,7 +242,8 @@ export async function createUserProfile({
       encryptionKeyExported: false,
       recoveryPhraseBackedUp: false,
       deleted: false,
-    });
+    };
+    return await databases.createDocument(DB_CORE, COLLECTIONS.USERS, userId, data);
   } catch (error) {
     console.error('Error creating user profile:', error);
     throw error;
@@ -281,11 +283,13 @@ export async function createUsernameDoc({ username, userId }: { username: string
   const canon = canonizeUsername(username);
   if (!canon) throw new Error('Invalid username');
   const now = new Date().toISOString();
-  return databases.createDocument(DB_CORE, COLLECTIONS.USERNAMES, ID.unique(), {
+  // Do not include $id or any Appwrite system fields in the data object
+  const data = {
     username: canon,
     userId,
     createdAt: now
-  });
+  };
+  return databases.createDocument(DB_CORE, COLLECTIONS.USERNAMES, ID.unique(), data);
 }
 
 export async function getUsernameDoc(username: string) {
