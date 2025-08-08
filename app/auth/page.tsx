@@ -131,9 +131,9 @@ export default function AuthPage() {
                {step === 'username' && (
                  <AuthUsernameInput />
                )}
-               {step === 'phrase' && <AuthPhraseInputOrGen />}
-               
-               
+{step === 'phrase' && <AuthPhraseInputOrGen />}
+                {step === 'showPhrase' && <AuthShowPhrase />}
+                               
              </Box>
            </motion.div>
          </Container>
