@@ -96,18 +96,18 @@ export async function signupEmailPassword(
        throw err;
      }
 
-     // Create user profile in users collection
-     try {
-       await createUserProfile({
-         userId: createdAccount.$id,
-         username: name,
-         displayName: name,
-         email,
-         publicKey: '', // TODO: Provide real publicKey if available
-         encryptedPrivateKey: '', // TODO: Provide real encryptedPrivateKey if available
-       });
-     } catch (err) {
-       console.error('Error creating user profile doc:', err);
+      // Create user profile in users collection
+      try {
+        await createUserProfile({
+          userId: createdAccount.$id,
+          username: name,
+          displayName: name,
+          email,
+          publicKey: '', // TODO: Provide real publicKey if available
+          encryptedPrivateKey: '', // TODO: Provide real encryptedPrivateKey if available
+          status: 'offline',
+        });
+      } catch (err) {       console.error('Error creating user profile doc:', err);
      }
 
      // Create username doc in usernames collection
@@ -212,6 +212,7 @@ export async function createUserProfile({
   email,
   publicKey,
   encryptedPrivateKey,
+  status = 'offline',
 }: {
   userId: string;
   username: string;
@@ -219,6 +220,7 @@ export async function createUserProfile({
   email: string;
   publicKey: string;
   encryptedPrivateKey: string;
+  status?: string;
 }) {
   const now = new Date().toISOString();
   
@@ -229,7 +231,7 @@ export async function createUserProfile({
       username: canonizeUsername(username),
       publicKey,
       createdAt: now,
-      status: 'offline',
+      status: status || 'offline',
     };
     if (displayName) data.displayName = displayName;
     if (email) data.email = email;
@@ -245,7 +247,9 @@ export async function createUserProfile({
 }
 
 export async function createUser(data: Partial<Types.Users>, userId: string = ID.unique()) {
-  const cleanData = (await import('./utils')).stripAppwriteSystemFields(data);
+  // Always set status to 'offline' if not provided
+  const userData = { ...data, status: data.status || 'offline' };
+  const cleanData = (await import('./utils')).stripAppwriteSystemFields(userData);
   return databases.createDocument(DB_CORE, COLLECTIONS.USERS, userId, cleanData);
 }
 export async function getUser(userId: string): Promise<Types.Users> {

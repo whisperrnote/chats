@@ -149,6 +149,7 @@ export default function AuthPhraseInputOrGen() {
         email,
         publicKey: btoa(String.fromCharCode(...publicKey)),
         encryptedPrivateKey: encryptedPrivateKeyJson,
+        status: 'offline',
       });
       try {
         const { createUsernameDoc } = await import('@/lib/appwrite');
