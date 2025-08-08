@@ -65,6 +65,9 @@ function AuthTopbar() {
   );
 }
 
+import { useAuth } from '@/store/auth';
+import { useRouter } from 'next/navigation';
+
 export default function AuthPage() {
   const { currentTheme } = useTheme();
   const theme = createAppTheme(currentTheme);
@@ -83,6 +86,16 @@ export default function AuthPage() {
 
 
    // Redirect to /app after authentication is complete
+   const { isAuthenticated, isLoading, initializeAuth } = useAuth();
+   const router = useRouter();
+   useEffect(() => {
+     initializeAuth();
+   }, [initializeAuth]);
+   useEffect(() => {
+     if (!isLoading && isAuthenticated) {
+       router.replace('/app');
+     }
+   }, [isAuthenticated, isLoading, router]);
    useEffect(() => {
      if (step === 'done') {
        window.location.href = '/app';

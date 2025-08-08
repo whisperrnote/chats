@@ -60,7 +60,9 @@ export default function SettingsPanel() {
         <FormControlLabel control={<Switch />} label="Maximal Animations" />
         <Divider sx={{ my: 2 }} />
         <Stack direction="row" spacing={2}>
-          <Button variant="outlined" color="error">Log Out</Button>
+          <Button variant="outlined" color="error" onClick={() => {
+  import('@/store/auth').then(mod => mod.useAuth.getState().signOut());
+}}>Log Out</Button>
           <Button variant="contained">Save Settings</Button>
         </Stack>
       </Box>
