@@ -61,8 +61,7 @@ export default function AuthPhraseInputOrGen() {
     error
   });
 
-  const [loading, setLoading] = useState(false);
-
+  
   // Signup: create Appwrite account, then user profile in DB
   const handleSignup = async () => {
     console.log('handleSignup called');
