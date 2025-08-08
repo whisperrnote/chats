@@ -15,7 +15,7 @@ import { useRouter } from 'next/navigation';
 
 export default function AppShell() {
   const theme = useTheme();
-  const { showProfile, showExtensions, isMobile } = useAppLayout();
+  const { showProfile, showExtensions, isMobile, activeMobileView } = useAppLayout();
   const { isAuthenticated, isLoading } = useAuth();
   const router = useRouter();
 
@@ -29,6 +29,41 @@ export default function AppShell() {
     return <div style={{height:'100vh',display:'flex',alignItems:'center',justifyContent:'center'}}><span>Loading...</span></div>;
   }
 
+  // MOBILE: Only one view at a time, full screen
+  if (isMobile) {
+    return (
+      <motion.div
+        initial={{ scale: 0.95, opacity: 0 }}
+        animate={{ scale: 1, opacity: 1 }}
+        transition={{ duration: 0.4, ease: 'easeOut' }}
+      >
+        <Box
+          sx={{
+            display: 'flex',
+            flexDirection: 'column',
+            height: '100vh',
+            bgcolor: 'background.default',
+            borderRadius: 0,
+            overflow: 'hidden',
+            boxShadow: theme.shadows[8],
+            border: `1px solid ${theme.palette.divider}`,
+          }}
+        >
+          <Sidebar />
+          {activeMobileView === 'chat' && (
+            <Box sx={{ flex: 1, display: 'flex', flexDirection: 'column', height: '100%' }}>
+              <ChatList />
+              <ChatWindow />
+            </Box>
+          )}
+          {activeMobileView === 'profile' && <ProfilePanel isMobile={true} />}
+          {activeMobileView === 'extensions' && <ExtensionPanel isMobile={true} />}
+        </Box>
+      </motion.div>
+    );
+  }
+
+  // DESKTOP: Multi-panel, draggable overlays
   return (
     <motion.div
       initial={{ scale: 0.95, opacity: 0 }}
@@ -51,7 +86,6 @@ export default function AppShell() {
         <ChatWindow />
         {showProfile && <ProfilePanel />}
         {showExtensions && <ExtensionPanel />}
-        {isMobile && <ResponsiveDrawer />}
       </Box>
     </motion.div>
   );

@@ -5,7 +5,9 @@ import { Rnd } from 'react-rnd';
 import ThemeSwitcher from '@/components/ui/ThemeSwitcher';
 import { useEffect, useState } from 'react';
 
-export default function ProfilePanel() {
+import React from 'react';
+
+export default function ProfilePanel({ isMobile = false }: { isMobile?: boolean }): React.ReactElement | null {
   const { user } = useUser();
 
   // SSR-safe default for Rnd
@@ -22,6 +24,50 @@ export default function ProfilePanel() {
     }
   }, []);
 
+  if (isMobile) {
+    return (
+      <Box
+        sx={{
+          bgcolor: 'background.paper',
+          borderRadius: 0,
+          boxShadow: 0,
+          p: 3,
+          height: '100vh',
+          width: '100vw',
+          display: 'flex',
+          flexDirection: 'column',
+        }}
+      >
+        <Box sx={{ mb: 2, display: 'flex', alignItems: 'center', gap: 2 }}>
+          <Avatar src={user?.avatarUrl || undefined} sx={{ width: 64, height: 64 }} />
+          <Box>
+            <Typography variant="h6">{user?.displayName || user?.username}</Typography>
+            <Typography variant="body2" color="text.secondary">{user?.bio}</Typography>
+          </Box>
+        </Box>
+        <Divider sx={{ my: 2 }} />
+        <Typography variant="subtitle2" color="text.secondary" gutterBottom>
+          Status: {user?.status || 'offline'}
+        </Typography>
+        <Typography variant="body2" sx={{ mb: 1 }}>
+          Credibility: {user?.credibilityTier || 'bronze'} ({user?.credibilityScore ?? 0})
+        </Typography>
+        <Typography variant="body2" sx={{ mb: 1 }}>
+          Email: {user?.email}
+        </Typography>
+        <Typography variant="body2" sx={{ mb: 1 }}>
+          Phone: {user?.phone}
+        </Typography>
+        <Divider sx={{ my: 2 }} />
+        <Stack direction="row" spacing={2} alignItems="center">
+          <ThemeSwitcher />
+          <Button variant="outlined" size="small">Edit Profile</Button>
+        </Stack>
+      </Box>
+    );
+  }
+
+  // Desktop: keep draggable
   return (
     <Rnd
       default={rndDefault}
