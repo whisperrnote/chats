@@ -3,6 +3,8 @@ import { create } from 'zustand';
 type AuthFlowState = {
   username: string;
   setUsername: (v: string) => void;
+  password: string;
+  setPassword: (v: string) => void;
   usernameExists: boolean | null;
   setUsernameExists: (v: boolean | null) => void;
   loading: boolean;
@@ -21,6 +23,8 @@ type AuthFlowState = {
 export const useAuthFlow = create<AuthFlowState>(set => ({
   username: '',
   setUsername: username => set({ username }),
+  password: '',
+  setPassword: password => set({ password }),
   usernameExists: null,
   setUsernameExists: usernameExists => set({ usernameExists }),
   loading: false,

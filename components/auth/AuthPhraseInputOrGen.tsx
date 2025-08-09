@@ -98,17 +98,14 @@ const freshUser = await findUserByUsername(username);      if (!freshUser || !fr
       setProgress('Creating account...');
       const userId = ID.unique();
       const email = usernameToEmail(username);
-      let password = '';
-      if (typeof window !== 'undefined') {
-        password = window.prompt('Set a password for ' + username + ':', '') || '';
-      }
-      if (!password) {
-        setError('Password is required.');
-        setLoading(false);
-        setProgress('');
-        return;
-      }
-      await signupEmailPassword(email, password, username, userId);
+       // Use password from shared state
+       const { password } = useAuthFlow();
+       if (!password) {
+         setError('Password is required.');
+         setLoading(false);
+         setProgress('');
+         return;
+       }      await signupEmailPassword(email, password, username, userId);
       setProgress('Encrypting recovery phrase...');
       const { createE2EEKeysAndEncryptUsername } = await import('@/lib/e2ee');
       const { encryptedUsername } = await createE2EEKeysAndEncryptUsername(phrase, canonizeUsername(username) || username);

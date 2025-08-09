@@ -129,9 +129,8 @@ export default function AuthUsernameInput() {
           <TextField
             label="Password"
             type={showPassword ? 'text' : 'password'}
-            value={password}
-            onChange={e => setPassword(e.target.value)}
-            fullWidth
+             value={password}
+             onChange={e => setPassword(e.target.value) /* update shared state */}            fullWidth
             variant="outlined"
             autoFocus={!!username}
             onKeyDown={e => {
