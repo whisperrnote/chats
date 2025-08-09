@@ -81,10 +81,15 @@ export async function signupEmailPassword(
     });
     
     // Create Appwrite account first
-    console.log('Creating Appwrite account...');
-    const createdAccount = await account.create(userId, email, password, name);
-    console.log('Account created successfully:', createdAccount);
-    
+     console.log('Creating Appwrite account...');
+     let createdAccount;
+     try {
+       createdAccount = await account.create(userId, email, password, name);
+       console.log('Account created successfully:', createdAccount);
+     } catch (err) {
+       console.error('Account creation failed:', err);
+       throw new Error('Account creation failed: ' + (err?.message || err));
+     }    
      // Then create session
      console.log('Creating session...');
      let session;
