@@ -31,16 +31,16 @@ export default function RegisterPanel() {
         return;
       }
       const userId = ID.unique();
-      await signupEmailPassword(username + '@users.noreply.whisperrchat.space', password, username, userId);
-      // Ensure session is active
-      try {
-        await import('@/lib/appwrite').then(m => m.getCurrentAccount());
-      } catch {
-        // Fallback: try to log in
-        await import('@/lib/appwrite').then(m => m.loginEmailPassword(username + '@users.noreply.whisperrchat.space', password));
+      const result = await signupEmailPassword(username + '@users.noreply.whisperrchat.space', password, username, userId);
+      
+      // Verify account was created and session is active
+      const currentAccount = await import('@/lib/appwrite').then(m => m.getCurrentAccount());
+      if (!currentAccount || !currentAccount.$id) {
+        throw new Error('Account creation failed - no active session');
       }
+      
       setUsername(username);
-      setStep('done'); // Next: phrase generation for E2EE
+      setStep('phrase'); // Go to phrase generation for E2EE
       snackbar.show('Account created! Please set up your recovery phrase.', 'success');
     } catch (err: any) {
       setError(err?.message || 'Signup failed');
