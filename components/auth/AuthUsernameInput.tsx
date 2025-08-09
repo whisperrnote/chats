@@ -39,16 +39,23 @@ export default function AuthUsernameInput() {
         setStep('phrase');
         return;
       } else {
-        if (!user) {
+         if (!user) {
           setLocalError('Username does not exist.');
           setUsernameExists(false);
           setLoading(false);
           return;
         }
+        // Authenticate with Appwrite
+        try {
+          await loginEmailPassword(usernameToEmail(username), password);
+        } catch (err: any) {
+          setLocalError('Incorrect password.');
+          setLoading(false);
+          return;
+        }
         setUsernameExists(true);
         setStep('phrase');
-        return;
-      }
+        return;      }
     } catch (e: any) {
       setLocalError(e?.message || (intent === 'signup' ? 'Signup failed' : 'Login failed'));
     } finally {
