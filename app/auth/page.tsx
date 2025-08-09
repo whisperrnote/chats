@@ -21,7 +21,6 @@ import { Typography, Stack, Card, IconButton } from '@mui/material';
 import { ArrowBack } from '@mui/icons-material';
 
 // Replaced by shared Topbar
-// function AuthHeader() {}
 // (Replaced by shared Topbar for theme consistency)
 
 function AuthBackground() {

@@ -138,6 +138,7 @@ export default function Topbar() {
                 WebkitBackgroundClip: 'text',
                 color: 'transparent',
                 letterSpacing: '-0.02em',
+                display: { xs: 'none', md: 'block' }, // Hide on mobile
               }}
             >
               Whisperrchat
