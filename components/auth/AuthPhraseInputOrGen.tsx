@@ -59,19 +59,7 @@ export default function AuthPhraseInputOrGen() {
         setLoading(false);
         return;
       }
-      let password = '';
-      if (typeof window !== 'undefined') {
-        password = window.prompt('Enter your password for ' + username + ':', '') || '';
-      }
-      if (!password) {
-        setError('Password is required.');
-        setLoading(false);
-        return;
-      }
-      const email = usernameToEmail(username);
-      await loginEmailPassword(email, password);
-      const freshUser = await findUserByUsername(username);
-      if (!freshUser || !freshUser.encryptedPrivateKey) {
+const freshUser = await findUserByUsername(username);      if (!freshUser || !freshUser.encryptedPrivateKey) {
         setError('User profile missing encrypted username.');
         snackbar.show('User profile missing encrypted username.', 'error');
         setLoading(false);
