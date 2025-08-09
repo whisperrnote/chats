@@ -42,7 +42,7 @@ await updateUser(userId, {
   return (
     <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
       <Typography variant="h6" mb={2}>Your Recovery Phrase</Typography>
-      <Box sx={{ bgcolor: '#fff', p: 2, borderRadius: 2, mb: 2, border: '1px solid #eee', display: 'flex', alignItems: 'center', gap: 1 }}>
+      <Box sx={{ bgcolor: '#fff', p: 2, borderRadius: 2, mb: 2, border: '1px solid #eee' }}>
         <Typography
           variant="body1"
           sx={{
@@ -53,17 +53,23 @@ await updateUser(userId, {
             filter: showPhrase ? 'none' : 'blur(8px)',
             transition: 'filter 0.2s',
             userSelect: showPhrase ? 'text' : 'none',
-            flex: 1,
           }}
         >
           {phrase}
         </Typography>
-
+      </Box>
+      <Box sx={{ display: 'flex', gap: 2, mb: 2 }}>
+        <Button
+          variant="outlined"
+          size="small"
+          onClick={() => setShowPhrase((v) => !v)}
+        >
+          {showPhrase ? 'Hide' : 'Reveal'}
+        </Button>
         <Button
           variant="outlined"
           size="small"
           onClick={() => { navigator.clipboard.writeText(phrase); snackbar.show('Copied!', 'success'); }}
-          sx={{ minWidth: 80 }}
         >
           Copy
         </Button>

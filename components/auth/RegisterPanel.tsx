@@ -32,6 +32,13 @@ export default function RegisterPanel() {
       }
       const userId = ID.unique();
       await signupEmailPassword(username + '@users.noreply.whisperrchat.space', password, username, userId);
+      // Ensure session is active
+      try {
+        await import('@/lib/appwrite').then(m => m.getCurrentAccount());
+      } catch {
+        // Fallback: try to log in
+        await import('@/lib/appwrite').then(m => m.loginEmailPassword(username + '@users.noreply.whisperrchat.space', password));
+      }
       setUsername(username);
       setStep('done'); // Next: phrase generation for E2EE
       snackbar.show('Account created! Please set up your recovery phrase.', 'success');
