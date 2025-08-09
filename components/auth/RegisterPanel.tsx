@@ -25,6 +25,11 @@ export default function RegisterPanel() {
     }
     setLoading(true);
     try {
+      // Show endpoint and project for debug
+      const endpoint = process.env.NEXT_PUBLIC_APPWRITE_ENDPOINT;
+      const project = process.env.NEXT_PUBLIC_APPWRITE_PROJECT_ID;
+      snackbar.show(`Using endpoint: ${endpoint}, project: ${project}`, 'info');
+      
       const exists = await findUserByUsername(username);
       if (exists) {
         setError('Username already exists.');
@@ -32,21 +37,21 @@ export default function RegisterPanel() {
       }
       const userId = ID.unique();
       const result = await signupEmailPassword(username + '@users.noreply.whisperrchat.space', password, username, userId);
-      
+      snackbar.show('Account creation call returned', 'info');
       // Verify account was created and session is active
       const currentAccount = await import('@/lib/appwrite').then(m => m.getCurrentAccount());
       if (!currentAccount || !currentAccount.$id) {
-        throw new Error('Account creation failed - no active session');
+        setError('Account creation failed - no active session');
+        snackbar.show('Account creation failed - no active session', 'error');
+        return;
       }
-      
       setUsername(username);
       setStep('phrase'); // Go to phrase generation for E2EE
       snackbar.show('Account created! Please set up your recovery phrase.', 'success');
     } catch (err: any) {
       setError(err?.message || 'Signup failed');
       snackbar.show(err?.message || 'Signup failed', 'error');
-    } finally {
-      setLoading(false);
+    } finally {      setLoading(false);
     }
   };
 
