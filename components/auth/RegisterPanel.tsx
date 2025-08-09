@@ -35,14 +35,22 @@ export default function RegisterPanel() {
         setError('Username already exists.');
         return;
       }
+      // Minimal, direct Appwrite signup and login
+      const { account: appwriteAccount } = await import('@/lib/appwrite').then(m => m.account);
       const userId = ID.unique();
-      const result = await signupEmailPassword(username + '@users.noreply.whisperrchat.space', password, username, userId);
-      snackbar.show('Account creation call returned', 'info');
-      // Verify account was created and session is active
-      const currentAccount = await import('@/lib/appwrite').then(m => m.getCurrentAccount());
-      if (!currentAccount || !currentAccount.$id) {
-        setError('Account creation failed - no active session');
-        snackbar.show('Account creation failed - no active session', 'error');
+      let createdAccount;
+      try {
+        createdAccount = await appwriteAccount.create(userId, username + '@users.noreply.whisperrchat.space', password, username);
+      } catch (err) {
+        setError('Account creation failed: ' + (err?.message || err));
+        snackbar.show('Account creation failed: ' + (err?.message || err), 'error');
+        return;
+      }
+      try {
+        await appwriteAccount.createEmailPasswordSession(username + '@users.noreply.whisperrchat.space', password);
+      } catch (err) {
+        setError('Login after signup failed: ' + (err?.message || err));
+        snackbar.show('Login after signup failed: ' + (err?.message || err), 'error');
         return;
       }
       setUsername(username);
