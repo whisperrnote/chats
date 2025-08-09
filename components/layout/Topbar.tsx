@@ -5,10 +5,7 @@ import { useRouter } from 'next/navigation';
 
 import Avatar from '@/components/ui/Avatar';
 import { useAuth } from '@/store/auth';
-import Navigation from '@/components/ui/Navigation';
 import ThemeSwitcher from '@/components/ui/ThemeSwitcher';
-import ContinueButton from '@/components/ui/ContinueButton';
-import { useAuthFlow } from '@/store/authFlow';
 import {
   AppBar,
   Box,
@@ -16,21 +13,34 @@ import {
   IconButton,
   Menu,
   MenuItem,
+  Button,
+  Typography,
+  Stack,
 } from '@mui/material';
 import { styled } from '@mui/material/styles';
 
-// Use only brown shades and subtle green hints for gradients/highlights
-const GlassAppBar = styled(AppBar)(({ theme }) => ({
-  background: theme.palette.mode === 'dark'
-    ? 'linear-gradient(90deg, rgba(35,24,14,0.92) 70%, rgba(78,205,196,0.08) 100%)'
-    : 'linear-gradient(90deg, #f5e9da 70%, #b7e6c8 100%)',
+const ModernAppBar = styled(AppBar)(({ theme }) => ({
+  background: 'rgba(255, 255, 255, 0.95)',
   backdropFilter: 'blur(20px)',
-  borderRadius: '0 0 24px 24px',
-  boxShadow: '0 8px 32px rgba(124,77,30,0.09)',
-  border: `1px solid ${theme.palette.mode === 'dark' ? '#3a2a18' : '#e8ded6'}`,
+  boxShadow: '0 1px 20px rgba(0, 0, 0, 0.1)',
+  border: 'none',
   position: 'sticky',
   top: 0,
   zIndex: 1000,
+  ...(theme.palette.mode === 'dark' && {
+    background: 'rgba(18, 18, 18, 0.95)',
+    boxShadow: '0 1px 20px rgba(0, 0, 0, 0.3)',
+  }),
+}));
+
+const Logo = styled(Box)(({ theme }) => ({
+  display: 'flex',
+  alignItems: 'center',
+  cursor: 'pointer',
+  transition: 'all 0.2s ease',
+  '&:hover': {
+    transform: 'scale(1.02)',
+  },
 }));
 
 function AccountMenu({ user, signOut }: { user: any, signOut: () => Promise<void> }) {
@@ -59,8 +69,23 @@ function AccountMenu({ user, signOut }: { user: any, signOut: () => Promise<void
         onClose={handleClose}
         anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
         transformOrigin={{ vertical: 'top', horizontal: 'right' }}
+        sx={{
+          '& .MuiPaper-root': {
+            borderRadius: 2,
+            minWidth: 180,
+            boxShadow: '0 8px 32px rgba(0,0,0,0.12)',
+          }
+        }}
       >
-        <MenuItem onClick={handleLogout}>Log out</MenuItem>
+        <MenuItem onClick={() => { handleClose(); /* Navigate to profile */ }}>
+          Profile
+        </MenuItem>
+        <MenuItem onClick={() => { handleClose(); /* Navigate to settings */ }}>
+          Settings
+        </MenuItem>
+        <MenuItem onClick={handleLogout} sx={{ color: 'error.main' }}>
+          Sign Out
+        </MenuItem>
       </Menu>
     </>
   );
@@ -70,22 +95,31 @@ export default function Topbar() {
   const router = useRouter();
   const { isAuthenticated, user, signOut } = useAuth();
 
+  const handleLogoClick = () => {
+    router.push('/');
+  };
+
+  const handleGetStarted = () => {
+    router.push('/auth');
+  };
+
   return (
     <motion.div
       initial={{ y: -100, opacity: 0 }}
       animate={{ y: 0, opacity: 1 }}
       transition={{ type: 'spring', stiffness: 100, damping: 20 }}
     >
-      <GlassAppBar elevation={0}>
+      <ModernAppBar elevation={0}>
         <Toolbar
           sx={{
             justifyContent: 'space-between',
             px: { xs: 2, md: 4 },
-            minHeight: { xs: 56, md: 64 },
+            py: 1,
+            minHeight: 72,
           }}
         >
-          {/* Logo image */}
-          <Box sx={{ display: 'flex', alignItems: 'center' }}>
+          {/* Logo */}
+          <Logo onClick={handleLogoClick}>
             <Image
               src="/images/logo.png"
               alt="whisperrchat logo"
@@ -94,22 +128,58 @@ export default function Topbar() {
               style={{ borderRadius: 8, marginRight: 12 }}
               priority
             />
+            <Typography
+              variant="h6"
+              sx={{
+                fontWeight: 800,
+                fontSize: '1.25rem',
+                background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                backgroundClip: 'text',
+                WebkitBackgroundClip: 'text',
+                color: 'transparent',
+                letterSpacing: '-0.02em',
+              }}
+            >
+              Whisperrchat
+            </Typography>
+          </Logo>
+
+          {/* Navigation - could be added later */}
+          <Box sx={{ display: { xs: 'none', md: 'flex' }, gap: 4 }}>
+            {/* Add navigation items here if needed */}
           </Box>
-          <Box sx={{ flex: 1, justifyContent: 'center', display: 'flex' }}>
-            <Navigation />
-          </Box>
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+
+          {/* Right side */}
+          <Stack direction="row" spacing={2} alignItems="center">
             <ThemeSwitcher />
-            {/* Show avatar with dropdown if authenticated */}
+            
             {isAuthenticated && user ? (
               <AccountMenu user={user} signOut={signOut} />
             ) : (
-              // Show Continue button if not authenticated
-              <ContinueButton onClick={() => router.push('/auth')} />
+              <Button
+                variant="contained"
+                onClick={handleGetStarted}
+                sx={{
+                  px: 3,
+                  py: 1,
+                  fontWeight: 600,
+                  borderRadius: '50px',
+                  textTransform: 'none',
+                  background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                  boxShadow: '0 4px 16px rgba(102, 126, 234, 0.3)',
+                  '&:hover': {
+                    transform: 'translateY(-1px)',
+                    boxShadow: '0 6px 20px rgba(102, 126, 234, 0.4)',
+                  },
+                  transition: 'all 0.2s ease',
+                }}
+              >
+                Get Started
+              </Button>
             )}
-          </Box>
+          </Stack>
         </Toolbar>
-      </GlassAppBar>
+      </ModernAppBar>
     </motion.div>
   );
 }
