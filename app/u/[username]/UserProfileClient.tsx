@@ -1,5 +1,6 @@
 'use client';
 import { Box, Typography, Button, useTheme } from '@mui/material';
+import ProfileSkeleton from './ProfileSkeleton';
 import Avatar from '@/components/ui/Avatar';
 import { capitalize } from '@/utils/stringUtils';
 
@@ -15,7 +16,7 @@ export default function UserProfileClient({ user, error }: { user: any, error: s
   const theme = useTheme();
 
   if (error) return <Box sx={{ p: 4, color: 'error.main', textAlign: 'center' }}>{error}</Box>;
-  if (!user) return <Box sx={{ p: 4, textAlign: 'center' }}>Loading…</Box>;
+  if (!user) return <ProfileSkeleton />;
 
   // Fallback initials
   const initials = (user.displayName || user.username || '?')
