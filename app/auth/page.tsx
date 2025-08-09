@@ -23,65 +23,6 @@ import { ArrowBack } from '@mui/icons-material';
 // Replaced by shared Topbar
 // function AuthHeader() {}
 // (Replaced by shared Topbar for theme consistency)
-  const router = useRouter();
-  
-  return (
-    <Box
-      sx={{
-        position: 'sticky',
-        top: 0,
-        zIndex: 100,
-        background: 'rgba(255, 255, 255, 0.95)',
-        backdropFilter: 'blur(20px)',
-        borderBottom: '1px solid',
-        borderColor: 'divider',
-        py: 2,
-      }}
-    >
-      <Container maxWidth="lg">
-        <Stack direction="row" alignItems="center" justifyContent="space-between">
-          <Stack direction="row" alignItems="center" spacing={2}>
-            <IconButton
-              onClick={() => router.push('/')}
-              sx={{
-                bgcolor: 'action.hover',
-                '&:hover': { bgcolor: 'action.selected' },
-              }}
-            >
-              <ArrowBack />
-            </IconButton>
-            
-            <Stack direction="row" alignItems="center" spacing={2}>
-              <Image
-                src="/images/logo.png"
-                alt="whisperrchat logo"
-                width={32}
-                height={32}
-                style={{ borderRadius: 6 }}
-                priority
-              />
-              <Typography
-                variant="h6"
-                sx={{
-                  fontWeight: 800,
-                  background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-                  backgroundClip: 'text',
-                  WebkitBackgroundClip: 'text',
-                  color: 'transparent',
-                  letterSpacing: '-0.02em',
-                }}
-              >
-                Whisperrchat
-              </Typography>
-            </Stack>
-          </Stack>
-          
-          <ThemeSwitcher />
-        </Stack>
-      </Container>
-    </Box>
-  );
-}
 
 function AuthBackground() {
   return (
