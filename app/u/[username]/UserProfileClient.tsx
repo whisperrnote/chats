@@ -1,8 +1,4 @@
 'use client';
-'use client';
-import { useEffect, useState } from 'react';
-import { useParams } from 'next/navigation';
-import { findUserByUsername } from '@/lib/appwrite';
 import { Box, Typography, Button, useTheme } from '@mui/material';
 import Avatar from '@/components/ui/Avatar';
 import { capitalize } from '@/utils/stringUtils';
@@ -15,19 +11,8 @@ function getColorFromString(str: string) {
   return color;
 }
 
-export default function UserProfilePage() {
-  const { username } = useParams();
-  const [user, setUser] = useState<any>(null);
-  const [error, setError] = useState<string | null>(null);
+export default function UserProfileClient({ user, error }: { user: any, error: string | null }) {
   const theme = useTheme();
-
-  useEffect(() => {
-    if (username) {
-      findUserByUsername(username as string)
-        .then(u => { setUser(u); setError(!u ? 'User not found' : null); })
-        .catch(() => setError('Failed to load user'));
-    }
-  }, [username]);
 
   if (error) return <Box sx={{ p: 4, color: 'error.main', textAlign: 'center' }}>{error}</Box>;
   if (!user) return <Box sx={{ p: 4, textAlign: 'center' }}>Loading…</Box>;
@@ -39,7 +24,6 @@ export default function UserProfilePage() {
     .join('')
     .slice(0, 2);
   const avatarBg = user.avatarUrl ? undefined : getColorFromString(user.username || '');
-  // Only pass color string, not function
   const contrastColor = avatarBg ? theme.palette.getContrastText?.(avatarBg) || '#fff' : undefined;
 
   return (
@@ -74,19 +58,12 @@ export default function UserProfilePage() {
             src={user.avatarUrl}
             alt={user.displayName || user.username}
             size={80}
-            style={{
-              background: avatarBg,
-              fontSize: 32,
-              color: contrastColor,
-              border: '3px solid #fff',
-              boxShadow: '0 2px 12px rgba(0,0,0,0.08)',
-            }}
           />
           {!user.avatarUrl && (
             <Box sx={{
               position: 'absolute',
               left: 0, right: 0, bottom: 8, textAlign: 'center', width: '100%', pointerEvents: 'none',
-              fontSize: 32, fontWeight: 700, color: contrastColor
+              fontSize: 32, fontWeight: 700, color: contrastColor, background: avatarBg, borderRadius: '50%', height: 80, lineHeight: '80px', border: '3px solid #fff', boxShadow: '0 2px 12px rgba(0,0,0,0.08)'
             }}>{initials}</Box>
           )}
         </Box>
