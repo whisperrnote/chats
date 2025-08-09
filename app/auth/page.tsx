@@ -7,6 +7,7 @@ import { useRouter } from 'next/navigation';
 import AuthPhraseInputOrGen from '@/components/auth/AuthPhraseInputOrGen';
 import AuthShowPhrase from '@/components/auth/AuthShowPhrase';
 import AuthUsernameInput from '@/components/auth/AuthUsernameInput';
+import Topbar from '@/components/layout/Topbar';
 import ThemeSwitcher from '@/components/ui/ThemeSwitcher';
 import { useAuthFlow } from '@/store/authFlow';
 import { useTheme } from '@/store/theme';
@@ -19,7 +20,9 @@ import { ThemeProvider } from '@mui/material/styles';
 import { Typography, Stack, Card, IconButton } from '@mui/material';
 import { ArrowBack } from '@mui/icons-material';
 
-function AuthHeader() {
+// Replaced by shared Topbar
+// function AuthHeader() {}
+// (Replaced by shared Topbar for theme consistency)
   const router = useRouter();
   
   return (
@@ -163,7 +166,7 @@ export default function AuthPage() {
       <AuthBackground />
       
       <Box sx={{ minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
-        <AuthHeader />
+         <Topbar />
         
         <Container 
           maxWidth="sm" 
