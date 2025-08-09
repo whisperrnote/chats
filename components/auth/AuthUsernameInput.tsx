@@ -7,32 +7,45 @@ import { useRouter } from 'next/navigation';
 import { Person, Lock, Visibility, VisibilityOff } from '@mui/icons-material';
 import { IconButton } from '@mui/material';
 
-import { loginEmailPassword, signupEmailPassword, usernameToEmail } from '@/lib/appwrite';
+import { loginEmailPassword, signupEmailPassword, usernameToEmail, findUserByUsername } from '@/lib/appwrite';
 
 export default function AuthUsernameInput() {
-  const {
+   const {
     username, setUsername,
     loading, setLoading,
     step, setStep,
-    error, setError
-  } = useAuthFlow();
-  const [password, setPassword] = useState('');
+    error, setError,
+    setUsernameExists
+   } = useAuthFlow();  const [password, setPassword] = useState('');
   const [localError, setLocalError] = useState('');
   const [intent, setIntent] = useState<'login' | 'signup'>('login');
   const [showPassword, setShowPassword] = useState(false);
   const router = useRouter();
 
-  const handleContinue = async () => {
+   const handleContinue = async () => {
     setLocalError('');
     setLoading(true);
     try {
+      // Check if username exists
+      const user = await findUserByUsername(username);
       if (intent === 'signup') {
-        const userId = undefined; // Let Appwrite generate
-        await signupEmailPassword(usernameToEmail(username), password, username, userId);
+        if (user) {
+          setLocalError('Username already exists. Please choose another.');
+          setUsernameExists(true);
+          setLoading(false);
+          return;
+        }
+        setUsernameExists(false);
         setStep('phrase');
         return;
       } else {
-        await loginEmailPassword(usernameToEmail(username), password);
+        if (!user) {
+          setLocalError('Username does not exist.');
+          setUsernameExists(false);
+          setLoading(false);
+          return;
+        }
+        setUsernameExists(true);
         setStep('phrase');
         return;
       }
