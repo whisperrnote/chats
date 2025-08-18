@@ -1,20 +1,35 @@
-import { Theme } from './types';
+import { ThemeOptions } from '@mui/material/styles';
 
-const defaultLight: Theme = {
-  name: 'Default Light',
-  colors: {
-    bg: '#f5e9da',
-    surface: '#fff8f0',
-    primary: '#b97a56',
-    accent: '#e0b97a',
-    text: '#23180e',
-    border: '#e0b97a',
-    error: '#ff4d4f',
+const defaultLight: ThemeOptions = {
+  palette: {
+    mode: 'light',
+    primary: {
+      main: '#8E4B10',
+      light: '#C66F2B',
+      dark: '#5A2E0A',
+      contrastText: '#FFFFFF',
+    },
+    secondary: {
+      main: '#B5835A',
+      light: '#EBC39A',
+      dark: '#845A33',
+      contrastText: '#FFFFFF',
+    },
+    background: {
+      default: '#F7F2EC',
+      paper: '#FFFFFF',
+    },
+    text: {
+      primary: '#3D2B1F',
+      secondary: '#6E5B4F',
+    },
+    divider: '#EAE0D5',
+    action: {
+      active: '#8E4B10',
+      hover: 'rgba(142, 75, 16, 0.08)',
+      selected: 'rgba(142, 75, 16, 0.16)',
+    },
   },
-  radius: 12,
-  shadow: '0 2px 8px rgba(0,0,0,0.08)',
-  font: 'Inter, system-ui, sans-serif',
-  pattern: 'geometric',
 };
 
 export default defaultLight;
