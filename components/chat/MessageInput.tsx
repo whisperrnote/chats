@@ -1,14 +1,96 @@
-export default function MessageInput() {
+'use client';
+
+import { useState } from 'react';
+import {
+  Box,
+  IconButton,
+  TextField,
+  InputAdornment,
+} from '@mui/material';
+import { styled, alpha } from '@mui/material/styles';
+import {
+  Add,
+  Mic,
+  Send,
+  TagFaces,
+} from '@mui/icons-material';
+
+const InputContainer = styled(Box)(({ theme }) => ({
+  padding: theme.spacing(1, 2),
+  backgroundColor: alpha(theme.palette.background.paper, 0.8),
+  backdropFilter: 'blur(12px)',
+  borderTop: `1px solid ${theme.palette.divider}`,
+  display: 'flex',
+  alignItems: 'center',
+  gap: theme.spacing(1),
+}));
+
+const StyledTextField = styled(TextField)(({ theme }) => ({
+  '& .MuiOutlinedInput-root': {
+    borderRadius: theme.shape.borderRadius * 3,
+    backgroundColor: theme.palette.background.default,
+    '& fieldset': {
+      border: 'none',
+    },
+    '&:hover fieldset': {
+      border: 'none',
+    },
+    '&.Mui-focused fieldset': {
+      border: 'none',
+    },
+  },
+}));
+
+export default function MessageInput({ onSend }) {
+  const [message, setMessage] = useState('');
+
+  const handleSend = () => {
+    if (message.trim()) {
+      onSend(message);
+      setMessage('');
+    }
+  };
+
+  const handleKeyPress = (e) => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      handleSend();
+    }
+  };
+
   return (
-    <form style={{ display: 'flex', gap: 8, padding: 16, borderTop: '1px solid var(--color-border)', background: 'var(--color-surface)' }}>
-      {/* TODO: Emoji/sticker picker, file upload, E2E status */}
-      <input
-        type="text"
-        placeholder="Type a message…"
-        style={{ flex: 1, padding: 8, borderRadius: 8, border: '1px solid var(--color-border)', background: 'var(--color-bg)', color: 'var(--color-text)' }}
-        disabled
+    <InputContainer>
+      <IconButton>
+        <Add />
+      </IconButton>
+      <StyledTextField
+        fullWidth
+        multiline
+        maxRows={5}
+        variant="outlined"
+        placeholder="Type a message..."
+        value={message}
+        onChange={(e) => setMessage(e.target.value)}
+        onKeyPress={handleKeyPress}
+        InputProps={{
+          endAdornment: (
+            <InputAdornment position="end">
+              <IconButton>
+                <TagFaces />
+              </IconButton>
+            </InputAdornment>
+          ),
+        }}
       />
-      <button type="submit" disabled>Send</button>
-    </form>
+      {message ? (
+        <IconButton color="primary" onClick={handleSend}>
+          <Send />
+        </IconButton>
+      ) : (
+        <IconButton>
+          <Mic />
+        </IconButton>
+      )}
+    </InputContainer>
   );
 }
