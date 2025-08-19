@@ -12,11 +12,12 @@ import { loginEmailPassword, signupEmailPassword, usernameToEmail, findUserByUse
 export default function AuthUsernameInput() {
    const {
     username, setUsername,
+    password, setPassword,
     loading, setLoading,
     step, setStep,
     error, setError,
     setUsernameExists
-   } = useAuthFlow();  const [password, setPassword] = useState('');
+   } = useAuthFlow();
   const [localError, setLocalError] = useState('');
   const [intent, setIntent] = useState<'login' | 'signup'>('login');
   const [showPassword, setShowPassword] = useState(false);

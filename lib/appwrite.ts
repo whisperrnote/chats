@@ -116,14 +116,14 @@ export async function signupEmailPassword(
      }
 
      // Create username doc in usernames collection
-     try {
-       await createUsernameDoc({
-         username: name,
-         userId: createdAccount.$id
-       });
-     } catch (err) {
-       console.error('Error creating username doc:', err);
-     }
+      try {
+        await createUsernameDoc({
+          username: name,
+          userId: createdAccount.$id
+        });
+      } catch (err) {
+        console.error('Error creating username doc:', err);
+      }
 
      return { account: createdAccount, session, userId };  } catch (error: any) {
     console.error('Appwrite signup error:', error);
@@ -293,7 +293,7 @@ export async function findUserByEmail(email: string) {
 }
 
 // --- USERNAMES ---
-export async function createUsernameDoc({ username, status = 'active', lastUsedBy }: { username: string; status?: string; lastUsedBy?: string }) {
+export async function createUsernameDoc({ username, userId, status = 'active', lastUsedBy }: { username: string; userId?: string; status?: string; lastUsedBy?: string }) {
   const canon = canonizeUsername(username);
   if (!canon) throw new Error('Invalid username');
   const now = new Date().toISOString();

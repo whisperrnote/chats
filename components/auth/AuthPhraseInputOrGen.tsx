@@ -23,11 +23,14 @@ import {
 import { generateRecoveryPhrase } from '@/lib/phrase';
 import { useAuthFlow } from '@/store/authFlow';
 import { useSnackbar } from '@/components/providers/SnackbarProvider';
+import { useAuth } from '@/store/auth';
 
 export default function AuthPhraseInputOrGen() {
   const snackbar = useSnackbar();
+  const { initializeAuth } = useAuth();
   const {
     username, setUsername,
+    password,
     phrase, setPhrase,
     phraseType, setPhraseType,
     usernameExists,
@@ -73,6 +76,8 @@ const freshUser = await findUserByUsername(username);      if (!freshUser || !fr
         setLoading(false);
         return;
       }
+      // Initialize auth state after successful login
+      await initializeAuth();
       setStep('done');
     } catch (e: any) {
       setError('Login failed: ' + (e?.message || 'Unknown error'));
@@ -98,14 +103,13 @@ const freshUser = await findUserByUsername(username);      if (!freshUser || !fr
       setProgress('Creating account...');
       const userId = ID.unique();
       const email = usernameToEmail(username);
-       // Use password from shared state
-       const { password } = useAuthFlow();
-       if (!password) {
-         setError('Password is required.');
-         setLoading(false);
-         setProgress('');
-         return;
-       }      await signupEmailPassword(email, password, username, userId);
+      if (!password) {
+        setError('Password is required.');
+        setLoading(false);
+        setProgress('');
+        return;
+      }
+      await signupEmailPassword(email, password, username, userId);
       setProgress('Encrypting recovery phrase...');
       const { createE2EEKeysAndEncryptUsername } = await import('@/lib/e2ee');
       const { encryptedUsername } = await createE2EEKeysAndEncryptUsername(phrase, canonizeUsername(username) || username);
@@ -127,6 +131,8 @@ const freshUser = await findUserByUsername(username);      if (!freshUser || !fr
         snackbar.show('Warning: Could not reserve username. Signup succeeded, but username may not be unique.', 'warning');
       }
       setProgress('Finishing up...');
+      // Initialize auth state after successful signup
+      await initializeAuth();
       setStep('done');
       setProgress('');
     } catch (err: any) {

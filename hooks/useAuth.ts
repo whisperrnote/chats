@@ -1,15 +1,5 @@
-import { useState } from 'react';
+import { useAuth as useZustandAuth } from '@/store/auth';
 
 export function useAuth() {
-  // Placeholder state
-  const [user, setUser] = useState(null);
-
-  return {
-    user,
-    login: () => {/* TODO: implement login */},
-    logout: () => {/* TODO: implement logout */},
-    register: () => {/* TODO: implement register */},
-    loading: false,
-    error: null,
-  };
+  return useZustandAuth();
 }
