@@ -12,7 +12,7 @@ import ThemeSwitcher from '@/components/ui/ThemeSwitcher';
 import { useAuthFlow } from '@/store/authFlow';
 import { useTheme } from '@/store/theme';
 import { createAppTheme } from '@/theme/theme';
-import { useAuth } from '@/store/auth';
+import { useAuth } from '@/hooks/useAuth';
 import Box from '@mui/material/Box';
 import Container from '@mui/material/Container';
 import CssBaseline from '@mui/material/CssBaseline';

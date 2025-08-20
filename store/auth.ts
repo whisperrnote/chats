@@ -12,7 +12,6 @@ type AuthState = {
   setLoading: (loading: boolean) => void;
   setError: (error: string | null) => void;
   initializeAuth: () => Promise<void>;
-  signOut: () => Promise<void>;
 };
 
 export const useAuth = create<AuthState>()(
@@ -41,18 +40,7 @@ export const useAuth = create<AuthState>()(
           set({ isLoading: false });
         }
       },
-      
-       signOut: async () => {
-         try {
-           await logout();
-           // Clear sensitive encryption keys from memory
-           const { clearKeys } = require('@/store/encryption');
-           if (typeof clearKeys === 'function') clearKeys();
-           set({ user: null, isAuthenticated: false, error: null });
-         } catch (error) {
-           set({ error: 'Failed to sign out' });
-         }
-       },    }),
+    }),
     {
       name: 'auth-storage',
       partialize: (state) => ({ user: state.user, isAuthenticated: state.isAuthenticated }),

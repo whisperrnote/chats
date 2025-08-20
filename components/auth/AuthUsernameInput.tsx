@@ -1,71 +1,37 @@
 'use client';
 import { useState } from 'react';
-import { Typography, TextField, Button, Link, Box, Stack, Alert, InputAdornment } from '@mui/material';
+import { Typography, TextField, Button, Box, Stack, Alert, InputAdornment } from '@mui/material';
 import { motion } from 'framer-motion';
 import { useAuthFlow } from '@/store/authFlow';
-import { useRouter } from 'next/navigation';
-import { Person, Lock, Visibility, VisibilityOff } from '@mui/icons-material';
-import { IconButton } from '@mui/material';
-
-import { loginEmailPassword, signupEmailPassword, usernameToEmail, findUserByUsername } from '@/lib/appwrite';
+import { Person } from '@mui/icons-material';
+import { findUserByUsername } from '@/lib/appwrite';
 
 export default function AuthUsernameInput() {
-   const {
-    username, setUsername,
-    password, setPassword,
-    loading, setLoading,
-    step, setStep,
-    error, setError,
-    setUsernameExists
-   } = useAuthFlow();
+  const {
+    username,
+    setUsername,
+    loading,
+    setLoading,
+    setStep,
+    error,
+    setError,
+    setUsernameExists,
+  } = useAuthFlow();
   const [localError, setLocalError] = useState('');
-  const [intent, setIntent] = useState<'login' | 'signup'>('login');
-  const [showPassword, setShowPassword] = useState(false);
-  const router = useRouter();
 
-   const handleContinue = async () => {
+  const handleContinue = async () => {
     setLocalError('');
     setLoading(true);
     try {
-      // Check if username exists
       const user = await findUserByUsername(username);
-      if (intent === 'signup') {
-        if (user) {
-          setLocalError('Username already exists. Please choose another.');
-          setUsernameExists(true);
-          setLoading(false);
-          return;
-        }
-        setUsernameExists(false);
-        setStep('phrase');
-        return;
-      } else {
-         if (!user) {
-          setLocalError('Username does not exist.');
-          setUsernameExists(false);
-          setLoading(false);
-          return;
-        }
-        // Authenticate with Appwrite
-        try {
-          await loginEmailPassword(usernameToEmail(username), password);
-        } catch (err: any) {
-          setLocalError('Incorrect password.');
-          setLoading(false);
-          return;
-        }
-        setUsernameExists(true);
-        setStep('phrase');
-        return;      }
+      setUsernameExists(!!user);
+      setStep('phrase');
     } catch (e: any) {
-      setLocalError(e?.message || (intent === 'signup' ? 'Signup failed' : 'Login failed'));
+      setLocalError(e?.message || 'Failed to check username');
+      setError(e?.message || 'Failed to check username');
     } finally {
       setLoading(false);
     }
-  };
-
-  const togglePasswordVisibility = () => {
-    setShowPassword(!showPassword);
   };
 
   return (
@@ -75,12 +41,11 @@ export default function AuthUsernameInput() {
       transition={{ duration: 0.5 }}
     >
       <Stack spacing={4}>
-        {/* Header */}
         <Box textAlign="center">
-          <Typography 
-            variant="h4" 
+          <Typography
+            variant="h4"
             fontWeight={700}
-            sx={{ 
+            sx={{
               mb: 1,
               background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
               backgroundClip: 'text',
@@ -88,22 +53,18 @@ export default function AuthUsernameInput() {
               color: 'transparent',
             }}
           >
-            {intent === 'signup' ? 'Create Account' : 'Welcome Back'}
+            Enter Your Username
           </Typography>
           <Typography variant="body1" color="text.secondary">
-            {intent === 'signup' 
-              ? 'Join thousands of users who trust Whisperrchat' 
-              : 'Sign in to your secure account'
-            }
+            Let's get started by finding your account or creating a new one.
           </Typography>
         </Box>
 
-        {/* Form */}
         <Stack spacing={3}>
           <TextField
             label="Username"
             value={username}
-            onChange={e => setUsername(e.target.value)}
+            onChange={(e) => setUsername(e.target.value)}
             fullWidth
             autoFocus
             variant="outlined"
@@ -126,63 +87,18 @@ export default function AuthUsernameInput() {
               },
             }}
           />
-          
-          <TextField
-            label="Password"
-            type={showPassword ? 'text' : 'password'}
-             value={password}
-             onChange={e => setPassword(e.target.value) /* update shared state */}            fullWidth
-            variant="outlined"
-            autoFocus={!!username}
-            onKeyDown={e => {
-              if (e.key === 'Enter' && password) {
-                handleContinue();
-              }
-            }}
-            InputProps={{
-              startAdornment: (
-                <InputAdornment position="start">
-                  <Lock color="action" />
-                </InputAdornment>
-              ),
-              endAdornment: (
-                <InputAdornment position="end">
-                  <IconButton
-                    onClick={togglePasswordVisibility}
-                    edge="end"
-                    size="small"
-                  >
-                    {showPassword ? <VisibilityOff /> : <Visibility />}
-                  </IconButton>
-                </InputAdornment>
-              ),
-            }}
-            sx={{
-              '& .MuiOutlinedInput-root': {
-                borderRadius: 2,
-                '&:hover .MuiOutlinedInput-notchedOutline': {
-                  borderColor: 'primary.main',
-                },
-                '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
-                  borderWidth: 2,
-                },
-              },
-            }}
-          />
 
-          {/* Error Display */}
           {(localError || error) && (
             <Alert severity="error" sx={{ borderRadius: 2 }}>
               {localError || error}
             </Alert>
           )}
 
-          {/* Submit Button */}
           <Button
             variant="contained"
             size="large"
             onClick={handleContinue}
-            disabled={loading || !username || !password}
+            disabled={loading || !username}
             fullWidth
             sx={{
               py: 1.5,
@@ -205,48 +121,10 @@ export default function AuthUsernameInput() {
               transition: 'all 0.2s ease',
             }}
           >
-            {loading ? 'Please wait...' : (intent === 'signup' ? 'Create Account' : 'Sign In')}
+            {loading ? 'Please wait...' : 'Continue'}
           </Button>
         </Stack>
 
-        {/* Toggle Auth Mode */}
-        <Box textAlign="center">
-          {intent === 'login' ? (
-            <Typography variant="body2" color="text.secondary">
-              Don't have an account?{' '}
-              <Link 
-                component="button" 
-                variant="body2" 
-                onClick={() => setIntent('signup')}
-                sx={{ 
-                  fontWeight: 600,
-                  textDecoration: 'none',
-                  '&:hover': { textDecoration: 'underline' }
-                }}
-              >
-                Sign up for free
-              </Link>
-            </Typography>
-          ) : (
-            <Typography variant="body2" color="text.secondary">
-              Already have an account?{' '}
-              <Link 
-                component="button" 
-                variant="body2" 
-                onClick={() => setIntent('login')}
-                sx={{ 
-                  fontWeight: 600,
-                  textDecoration: 'none',
-                  '&:hover': { textDecoration: 'underline' }
-                }}
-              >
-                Sign in here
-              </Link>
-            </Typography>
-          )}
-        </Box>
-
-        {/* Trust Indicators */}
         <Box
           sx={{
             mt: 4,
