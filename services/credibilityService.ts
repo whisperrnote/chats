@@ -1,4 +1,3 @@
-```typescript
 // ...existing code...
 
 export async function getCredibility(userId: string) {
@@ -10,4 +9,3 @@ export async function updateCredibility(userId: string, updates: any) {
   // TODO: Update credibility info in backend
   return null;
 }
-```

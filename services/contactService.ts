@@ -1,4 +1,3 @@
-```typescript
 import { client } from "../lib/appwrite";
 
 export async function getContacts(userId: string) {
@@ -15,4 +14,3 @@ export async function removeContact(userId: string, contactId: string) {
   // TODO: Remove contact in backend
   return null;
 }
-```
