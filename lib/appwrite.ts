@@ -4,6 +4,7 @@ import {
   Avatars,
   Client,
   Databases,
+  Functions,
   ID,
   Permission,
   Query,
@@ -23,6 +24,7 @@ export const account = new Account(client);
 export const databases = new Databases(client);
 export const storage = new Storage(client);
 export const avatars = new Avatars(client);
+export const functions = new Functions(client);
 
 export { AppwriteRole, ID, Permission, Query };
 
@@ -60,80 +62,44 @@ export function canonizeUsername(username?: string): string | undefined {
 
 // --- Auth & Account Methods ---
 
-export async function signupEmailPassword(
-  email: string,
-  password: string,
-  name: string,
-  userId: string = ID.unique()
-) {
+export const CUSTOM_AUTH_FUNCTION_ID = 'custom-auth';
+
+export async function executeAuthFunction(payload: {
+  action: 'register' | 'login';
+  username: string;
+  publicKey?: string;
+  encryptedPrivateKey?: string;
+}) {
   try {
-    console.log('signupEmailPassword called with:', {
-      email,
-      passwordLength: password.length,
-      name,
-      userId,
-      endpoint: process.env.NEXT_PUBLIC_APPWRITE_ENDPOINT,
-      projectId: process.env.NEXT_PUBLIC_APPWRITE_PROJECT_ID
-    });
-    
-    // Create Appwrite account first
-     console.log('Creating Appwrite account...');
-     let createdAccount;
-     try {
-       createdAccount = await account.create(userId, email, password, name);
-       console.log('Account created successfully:', createdAccount);
-     } catch (err) {
-       console.error('Account creation failed:', err);
-       throw new Error('Account creation failed: ' + (err?.message || err));
-     }    
-     // Then create session
-     console.log('Creating session...');
-     let session;
-     try {
-       session = await account.createEmailPasswordSession(email, password);
-       console.log('Session created successfully:', session);
-     } catch (err) {
-       console.error('account.createEmailPasswordSession threw:', err);
-       throw err;
-     }
+    const result = await functions.createExecution(
+      CUSTOM_AUTH_FUNCTION_ID,
+      JSON.stringify(payload),
+      false // async
+    );
 
-      // Create user profile in users collection
-      try {
-        await createUserProfile({
-          userId: createdAccount.$id,
-          username: name,
-          displayName: name,
-          email,
-          publicKey: '', // TODO: Provide real publicKey if available
-          encryptedPrivateKey: '', // TODO: Provide real encryptedPrivateKey if available
-          status: 'offline',
-        });
-      } catch (err) {       console.error('Error creating user profile doc:', err);
-     }
+    if (result.statusCode !== 200) {
+      const response = JSON.parse(result.response);
+      throw new Error(response.message || 'Function execution failed');
+    }
 
-     // Create username doc in usernames collection
-      try {
-        await createUsernameDoc({
-          username: name,
-          userId: createdAccount.$id
-        });
-      } catch (err) {
-        console.error('Error creating username doc:', err);
+    return JSON.parse(result.response);
+  } catch (error: any) {
+    console.error('Appwrite function execution error:', error);
+    // Attempt to parse the error response from the function if available
+    try {
+      const innerError = JSON.parse(error.response);
+      if (innerError && innerError.message) {
+        throw new Error(innerError.message);
       }
-
-     return { account: createdAccount, session, userId };  } catch (error: any) {
-    console.error('Appwrite signup error:', error);
-    console.error('Error details:', {
-      message: error?.message,
-      code: error?.code,
-      type: error?.type
-    });
+    } catch (e) {
+      // Ignore parsing error, throw original error
+    }
     throw error;
   }
 }
 
-export async function loginEmailPassword(email: string, password: string) {
-  return account.createEmailPasswordSession(email, password);
+export async function createSessionFromToken(userId: string, secret: string) {
+  return account.createSession(userId, secret);
 }
 export async function sendEmailVerification(redirectUrl: string) {
   return account.createVerification(redirectUrl);

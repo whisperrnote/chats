@@ -8,26 +8,6 @@ import { promisify } from 'util';
 const pbkdf2Async = promisify(pbkdf2);
 
 /**
- * Deterministically derive a strong password from mnemonic (and optional salt)
- * Output: 64-char base64 string (Appwrite-compliant)
- */
-export async function derivePasswordFromPhrase(
-  mnemonic: string,
-  salt: string = 'appwrite-password'
-): Promise<string> {
-  // Use PBKDF2 with 100,000 iterations, SHA256, 32 bytes output
-  const key = await pbkdf2Async(
-    mnemonic.normalize('NFKD'),
-    salt.normalize('NFKD'),
-    100000,
-    32,
-    'sha256'
-  );
-  // Return as base64 (Appwrite allows long passwords)
-  return key.toString('base64');
-}
-
-/**
  * Generate a BIP39-compliant mnemonic phrase (12 or 24 words)
  * @param words The number of words in the mnemonic (12 or 24)
  * @returns The mnemonic phrase as a string
