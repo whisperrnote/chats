@@ -56,10 +56,6 @@ export function canonizeUsername(username?: string): string | undefined {
   return username.trim().replace(/[^a-zA-Z0-9_]/g, '_').replace(/_+/g, '_').toLowerCase();
 }
 
-// Use canonical username as email for Appwrite auth
-export function usernameToEmail(username: string): string {
-  return `${canonizeUsername(username)}@users.noreply.whisperrchat.space`;
-}
 
 
 // --- Auth & Account Methods ---
