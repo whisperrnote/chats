@@ -52,7 +52,7 @@ export function useAuth() {
     setAuthError(null);
     try {
       const email = usernameToEmail(username);
-      const password = derivePasswordFromPhrase(phrase);
+      const password = await derivePasswordFromPhrase(phrase);
 
       // Generate encryption key and keypair
       const encryptionKey = await deriveEncryptionKey(phrase, email);
@@ -86,7 +86,7 @@ export function useAuth() {
     setAuthError(null);
     try {
       const email = usernameToEmail(username);
-      const password = derivePasswordFromPhrase(phrase);
+      const password = await derivePasswordFromPhrase(phrase);
 
       // Login to Appwrite
       await loginEmailPassword(email, password);

@@ -57,12 +57,6 @@ export default function AuthPage() {
     }
   }, [isAuthenticated, isLoading, router]);
 
-  useEffect(() => {
-    if (step === 'done') {
-      window.location.href = '/app';
-    }
-  }, [step]);
-
   if (isLoading) {
     return (
       <Box sx={{
