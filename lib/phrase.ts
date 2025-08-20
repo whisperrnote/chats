@@ -2,18 +2,21 @@
 // Professional BIP39 mnemonic utilities using the official bip39 package
 
 import * as bip39 from 'bip39';
-import { pbkdf2Sync } from 'crypto';
+import { pbkdf2 } from 'crypto';
+import { promisify } from 'util';
+
+const pbkdf2Async = promisify(pbkdf2);
 
 /**
  * Deterministically derive a strong password from mnemonic (and optional salt)
  * Output: 64-char base64 string (Appwrite-compliant)
  */
-export function derivePasswordFromPhrase(
+export async function derivePasswordFromPhrase(
   mnemonic: string,
   salt: string = 'appwrite-password'
-): string {
+): Promise<string> {
   // Use PBKDF2 with 100,000 iterations, SHA256, 32 bytes output
-  const key = pbkdf2Sync(
+  const key = await pbkdf2Async(
     mnemonic.normalize('NFKD'),
     salt.normalize('NFKD'),
     100000,
@@ -58,18 +61,12 @@ export async function deriveEncryptionKey(
   salt: string
 ): Promise<string> {
   // Use PBKDF2 with 2048 iterations, SHA512, 64 bytes output (BIP39 standard)
-  return new Promise((resolve, reject) => {
-    try {
-      const key = pbkdf2Sync(
-        mnemonic.normalize('NFKD'),
-        ('mnemonic' + salt).normalize('NFKD'),
-        2048,
-        64,
-        'sha512'
-      );
-      resolve(key.toString('hex'));
-    } catch (e) {
-      reject(e);
-    }
-  });
+  const key = await pbkdf2Async(
+    mnemonic.normalize('NFKD'),
+    ('mnemonic' + salt).normalize('NFKD'),
+    2048,
+    64,
+    'sha512'
+  );
+  return key.toString('hex');
 }
