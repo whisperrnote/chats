@@ -4,9 +4,7 @@ import { motion } from 'framer-motion';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 
-import AuthPhraseInputOrGen from '@/components/auth/AuthPhraseInputOrGen';
-import AuthShowPhrase from '@/components/auth/AuthShowPhrase';
-import AuthUsernameInput from '@/components/auth/AuthUsernameInput';
+import Auth from '@/components/auth/Auth';
 import Topbar from '@/components/layout/Topbar';
 import ThemeSwitcher from '@/components/ui/ThemeSwitcher';
 import { useAuthFlow } from '@/store/authFlow';
@@ -46,7 +44,6 @@ function AuthBackground() {
 export default function AuthPage() {
   const { currentTheme } = useTheme();
   const theme = createAppTheme(currentTheme);
-  const { step, setUsername, setStep } = useAuthFlow();
   const { isAuthenticated, isLoading } = useAuth();
   const router = useRouter();
 
@@ -134,33 +131,8 @@ export default function AuthPage() {
                 }),
               }}
             >
-              {step === 'username' && <AuthUsernameInput />}
-              {step === 'phrase' && <AuthPhraseInputOrGen />}
-              {step === 'showPhrase' && <AuthShowPhrase />}
+              <Auth />
             </Card>
-
-            {/* Step Indicator */}
-            <Stack 
-              direction="row" 
-              spacing={1} 
-              justifyContent="center" 
-              sx={{ mt: 4 }}
-            >
-              {['username', 'phrase', 'showPhrase'].map((stepName, index) => (
-                <Box
-                  key={stepName}
-                  sx={{
-                    width: 8,
-                    height: 8,
-                    borderRadius: '50%',
-                    background: step === stepName 
-                      ? 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)'
-                      : 'divider',
-                    transition: 'all 0.3s ease',
-                  }}
-                />
-              ))}
-            </Stack>
           </motion.div>
         </Container>
       </Box>

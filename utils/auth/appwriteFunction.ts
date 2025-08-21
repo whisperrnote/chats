@@ -1,4 +1,14 @@
 import { Client, Users, Databases, ID, Query } from 'node-appwrite';
+import {
+  generateRegistrationOptions,
+  verifyRegistrationResponse,
+  generateAuthenticationOptions,
+  verifyAuthenticationResponse,
+} from '@simplewebauthn/server';
+import type {
+  VerifiedRegistrationResponse,
+  VerifiedAuthenticationResponse,
+} from '@simplewebauthn/server';
 
 interface Context {
   req: {
@@ -12,11 +22,20 @@ interface Context {
   error: (message: string) => void;
 }
 
+type Action =
+  | 'register'
+  | 'login'
+  | 'generate-registration-options'
+  | 'verify-registration'
+  | 'generate-authentication-options'
+  | 'verify-authentication';
+
 interface AuthPayload {
-  action: 'register' | 'login';
+  action: Action;
   username: string;
   publicKey?: string;
   encryptedPrivateKey?: string;
+  // Passkey-specific fields will be added later
 }
 
 interface AuthResponse {
@@ -181,7 +200,84 @@ export default async function({ req, res, log, error }: Context): Promise<void> 
 
       return res.json(response);
 
-    } else {
+    } else if (action === 'generate-registration-options') {
+      log('Generating passkey registration options');
+      // To be implemented
+      return res.json({ success: false, error: 'Not implemented' }, 501);
+
+    } else if (action === 'verify-registration') {
+      log('Verifying passkey registration');
+      // To be implemented
+      return res.json({ success: false, error: 'Not implemented' }, 501);
+
+    } else if (action === 'generate-authentication-options') {
+      log('Generating passkey authentication options');
+      // To be implemented
+      return res.json({ success: false, error: 'Not implemented' }, 501);
+
+    } else if (action === 'verify-authentication') {
+      log('Verifying passkey authentication');
+      // To be implemented
+      return res.json({ success: false, error: 'Not implemented' }, 501);
+
+    } else if (action === 'update-username') {
+      const userId = req.variables['APPWRITE_FUNCTION_USER_ID'];
+      const { newUsername } = payload as any;
+
+      if (!userId) {
+        error('No user ID found in request. Function must be called by an authenticated user.');
+        return res.json({ success: false, error: 'Authentication required.' }, 401);
+      }
+
+      if (!newUsername || typeof newUsername !== 'string') {
+        error('New username not provided or invalid.');
+        return res.json({ success: false, error: 'Username is required.' }, 400);
+      }
+
+      log(`Updating username for user ${userId} to ${newUsername}`);
+
+      // 1. Check if the new username is already taken
+      const existingUsers = await databases.listDocuments(
+        DATABASE_ID,
+        USERS_COLLECTION_ID,
+        [Query.equal('username', newUsername)]
+      );
+
+      if (existingUsers.total > 0) {
+        error(`Username ${newUsername} is already taken.`);
+        return res.json({ success: false, error: 'Username already taken.' }, 409);
+      }
+
+      // 2. Update the user's name in Appwrite Auth
+      await users.updateName(userId, newUsername);
+      log(`Updated Appwrite Auth user's name for ${userId}.`);
+
+      // 3. Find and update the user's profile document
+      const userProfiles = await databases.listDocuments(
+        DATABASE_ID,
+        USERS_COLLECTION_ID,
+        [Query.equal('userId', userId)]
+      );
+
+      if (userProfiles.total === 0) {
+        // This case should ideally not happen if the user was created correctly
+        error(`User profile not found for userId ${userId}.`);
+        return res.json({ success: false, error: 'User profile not found.' }, 404);
+      }
+
+      const userProfileId = userProfiles.documents[0].$id;
+      await databases.updateDocument(
+        DATABASE_ID,
+        USERS_COLLECTION_ID,
+        userProfileId,
+        { username: newUsername }
+      );
+      log(`Updated user profile document for ${userId}.`);
+
+      return res.json({ success: true, message: 'Username updated successfully.' });
+    }
+
+    else {
       error(`Invalid action: ${action}`);
       return res.json({ 
         success: false, 
