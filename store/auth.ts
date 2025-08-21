@@ -12,6 +12,7 @@ type AuthState = {
   setLoading: (loading: boolean) => void;
   setError: (error: string | null) => void;
   initializeAuth: () => Promise<void>;
+  signOut: () => Promise<void>;
 };
 
 export const useAuth = create<AuthState>()(
@@ -38,6 +39,16 @@ export const useAuth = create<AuthState>()(
           set({ user: null, isAuthenticated: false });
         } finally {
           set({ isLoading: false });
+        }
+      },
+      
+      signOut: async () => {
+        try {
+          await logout();
+          set({ user: null, isAuthenticated: false, error: null });
+        } catch (error) {
+          console.error('Logout error:', error);
+          set({ error: 'Failed to logout' });
         }
       },
     }),

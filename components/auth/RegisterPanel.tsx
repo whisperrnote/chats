@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useAuthFlow } from '@/store/authFlow';
-import { signupEmailPassword, findUserByUsername, ID } from '@/lib/appwrite';
+import { findUserByUsername, ID } from '@/lib/appwrite';
 import { useSnackbar } from '@/components/providers/SnackbarProvider';
 
 export default function RegisterPanel() {
@@ -36,19 +36,19 @@ export default function RegisterPanel() {
         return;
       }
       // Minimal, direct Appwrite signup and login
-      const { account: appwriteAccount } = await import('@/lib/appwrite').then(m => m.account);
+      const { account: appwriteAccount } = await import('@/lib/appwrite').then(m => ({ account: m.account }));
       const userId = ID.unique();
       let createdAccount;
       try {
         createdAccount = await appwriteAccount.create(userId, username + '@users.noreply.whisperrchat.space', password, username);
-      } catch (err) {
+      } catch (err: any) {
         setError('Account creation failed: ' + (err?.message || err));
         snackbar.show('Account creation failed: ' + (err?.message || err), 'error');
         return;
       }
       try {
         await appwriteAccount.createEmailPasswordSession(username + '@users.noreply.whisperrchat.space', password);
-      } catch (err) {
+      } catch (err: any) {
         setError('Login after signup failed: ' + (err?.message || err));
         snackbar.show('Login after signup failed: ' + (err?.message || err), 'error');
         return;

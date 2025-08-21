@@ -325,11 +325,11 @@ export async function searchChatsByTitle(userId: string, searchTerm: string) {
 // --- CHAT MEMBERS ---
 export async function addChatMember(data: Partial<Types.ChatMembers>, chatMemberId: string = ID.unique()) {
   const cleanData = (await import('./utils')).stripAppwriteSystemFields(data);
-  return databases.createDocument(DB_CORE, COLLECTIONS.CHATMEMBERS, chatMemberId, cleanData);
+  return databases.createDocument(DB_CORE, COLLECTIONS.CHATMEMBERS, chatMemberId, cleanData as any);
 }
 export async function updateChatMember(chatMemberId: string, data: Partial<Types.ChatMembers>) {
   const cleanData = (await import('./utils')).stripAppwriteSystemFields(data);
-  return databases.updateDocument(DB_CORE, COLLECTIONS.CHATMEMBERS, chatMemberId, cleanData);
+  return databases.updateDocument(DB_CORE, COLLECTIONS.CHATMEMBERS, chatMemberId, cleanData as any);
 }
 export async function removeChatMember(chatMemberId: string) {
   return databases.deleteDocument(DB_CORE, COLLECTIONS.CHATMEMBERS, chatMemberId);
@@ -344,14 +344,14 @@ export async function listUserChatMemberships(userId: string) {
 // --- MESSAGES ---
 export async function createMessage(data: Partial<Types.Messages>, messageId: string = ID.unique()) {
   const cleanData = (await import('./utils')).stripAppwriteSystemFields(data);
-  return databases.createDocument(DB_CORE, COLLECTIONS.MESSAGES, messageId, cleanData);
+  return databases.createDocument(DB_CORE, COLLECTIONS.MESSAGES, messageId, cleanData as any);
 }
 export async function getMessage(messageId: string): Promise<Types.Messages> {
   return databases.getDocument(DB_CORE, COLLECTIONS.MESSAGES, messageId) as Promise<Types.Messages>;
 }
 export async function updateMessage(messageId: string, data: Partial<Types.Messages>) {
   const cleanData = (await import('./utils')).stripAppwriteSystemFields(data);
-  return databases.updateDocument(DB_CORE, COLLECTIONS.MESSAGES, messageId, cleanData);
+  return databases.updateDocument(DB_CORE, COLLECTIONS.MESSAGES, messageId, cleanData as any);
 }
 export async function deleteMessage(messageId: string) {
   return databases.deleteDocument(DB_CORE, COLLECTIONS.MESSAGES, messageId);
@@ -371,18 +371,18 @@ export async function listMessagesByUser(userId: string, queries: any[] = []) {
 export async function searchMessages(chatId: string, searchTerm: string) {
   const messages = await listMessages(chatId);
   return messages.documents.filter((msg) =>
-    (msg as Types.Messages).content?.toLowerCase().includes(searchTerm.toLowerCase())
+    (msg as any).content?.toLowerCase().includes(searchTerm.toLowerCase())
   );
 }
 
 // --- CONTACTS ---
 export async function addContact(data: Partial<Types.Contacts>, contactId: string = ID.unique()) {
   const cleanData = (await import('./utils')).stripAppwriteSystemFields(data);
-  return databases.createDocument(DB_CORE, COLLECTIONS.CONTACTS, contactId, cleanData);
+  return databases.createDocument(DB_CORE, COLLECTIONS.CONTACTS, contactId, cleanData as any);
 }
 export async function updateContact(contactId: string, data: Partial<Types.Contacts>) {
   const cleanData = (await import('./utils')).stripAppwriteSystemFields(data);
-  return databases.updateDocument(DB_CORE, COLLECTIONS.CONTACTS, contactId, cleanData);
+  return databases.updateDocument(DB_CORE, COLLECTIONS.CONTACTS, contactId, cleanData as any);
 }
 export async function deleteContact(contactId: string) {
   return databases.deleteDocument(DB_CORE, COLLECTIONS.CONTACTS, contactId);
@@ -394,11 +394,11 @@ export async function listContacts(ownerId: string) {
 // --- DEVICES ---
 export async function addDevice(data: Partial<Types.Devices>, deviceId: string = ID.unique()) {
   const cleanData = (await import('./utils')).stripAppwriteSystemFields(data);
-  return databases.createDocument(DB_CORE, COLLECTIONS.DEVICES, deviceId, cleanData);
+  return databases.createDocument(DB_CORE, COLLECTIONS.DEVICES, deviceId, cleanData as any);
 }
 export async function updateDevice(deviceId: string, data: Partial<Types.Devices>) {
   const cleanData = (await import('./utils')).stripAppwriteSystemFields(data);
-  return databases.updateDocument(DB_CORE, COLLECTIONS.DEVICES, deviceId, cleanData);
+  return databases.updateDocument(DB_CORE, COLLECTIONS.DEVICES, deviceId, cleanData as any);
 }
 export async function deleteDevice(deviceId: string) {
   return databases.deleteDocument(DB_CORE, COLLECTIONS.DEVICES, deviceId);

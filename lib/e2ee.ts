@@ -1,15 +1,15 @@
 // lib/e2ee.ts
 // E2EE session management: key storage, unlock, encrypt/decrypt user data
 import {
-  deriveKeyFromPhrase,
   generateKeypair,
   encryptPrivateKey,
   decryptPrivateKey,
   encryptAESGCM,
   decryptAESGCM,
   strToUint8,
-  uint8ToStr
+  uint8ToStr,
 } from './crypto';
+import { deriveEncryptionKey } from './phrase';
 
 // --- Types ---
 export type EncryptedPrivateKey = {
@@ -25,8 +25,8 @@ export type E2EEKeys = {
 // --- Signup: Generate keys and encrypt private key with phrase ---
 // Instead of generating a keypair, just encrypt the username with the phrase-derived key
 export async function createE2EEKeysAndEncryptUsername(phrase: string, username: string) {
-  const kdfKey = await deriveKeyFromPhrase(phrase, username);
-  const { nonce, ciphertext } = encryptAESGCM(kdfKey, strToUint8(username));
+  const kdfKey = await deriveEncryptionKey(phrase, username);
+  const { nonce, ciphertext } = encryptAESGCM(strToUint8(kdfKey), strToUint8(username));
   // Store as base64 string for Appwrite
   return {
     encryptedUsername: JSON.stringify({
@@ -43,7 +43,7 @@ export async function verifyPhraseWithEncryptedUsername(
   username: string,
   encrypted: string
 ): Promise<boolean> {
-  const kdfKey = await deriveKeyFromPhrase(phrase, username);
+  const kdfKey = await deriveEncryptionKey(phrase, username);
   let parsed;
   try {
     parsed = JSON.parse(encrypted);
@@ -53,7 +53,7 @@ export async function verifyPhraseWithEncryptedUsername(
   const nonce = Buffer.from(parsed.nonce, 'base64');
   const ciphertext = Buffer.from(parsed.ciphertext, 'base64');
   try {
-    const decrypted = decryptAESGCM(kdfKey, nonce, ciphertext);
+    const decrypted = decryptAESGCM(strToUint8(kdfKey), nonce, ciphertext);
     return uint8ToStr(decrypted) === username;
   } catch {
     return false;

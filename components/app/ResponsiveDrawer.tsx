@@ -1,6 +1,6 @@
 'use client';
 import { Box, Drawer } from '@mui/material';
-import Sidebar from './Sidebar';
+import Sidebar from '../layout/Sidebar';
 import ChatList from './ChatList';
 import { useAppLayout } from '../../store/layout';
 

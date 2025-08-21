@@ -9,7 +9,7 @@ import {
   Typography,
 } from '@mui/material';
 import { Search } from '@mui/icons-material';
-import { AnimatePresence } from 'framer-motion';
+import { AnimatePresence, motion } from 'framer-motion';
 
 import ChatItem from './ChatItem';
 // import { useChats } from '@/store/chats'; // Will use this later
@@ -28,7 +28,7 @@ export default function ChatList() {
   const [selectedChat, setSelectedChat] = useState('1');
   const [searchTerm, setSearchTerm] = useState('');
 
-  const handleSelectChat = (chatId) => {
+  const handleSelectChat = (chatId: string) => {
     setSelectedChat(chatId);
     // TODO: Add logic to open the chat window
   };
