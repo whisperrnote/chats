@@ -74,24 +74,32 @@ import { createCustomAuthClient } from '@/utils/auth';
 export const CUSTOM_AUTH_FUNCTION_ID = 'custom-auth';
 
 export async function executeAuthFunction(payload: {
-  action: 'register' | 'login';
-  username: string;
+  action: 'register' | 'login' | 'update-username';
+  username?: string;
+  newUsername?: string;
   publicKey?: string;
   encryptedPrivateKey?: string;
 }) {
   try {
-    const authClient = createCustomAuthClient();
-    const result = await authClient.authenticate(payload);
-    
-    if (!result.success) {
-      throw new Error(result.error || 'Authentication failed');
+    const result = await functions.createExecution(
+        CUSTOM_AUTH_FUNCTION_ID,
+        JSON.stringify(payload),
+        false, // async
+        undefined, // path
+        'POST' // method
+    );
+
+    if (result.status === 'failed') {
+        throw new Error(result.stderr || 'Function execution failed');
     }
-    
-    return {
-      userId: result.userId,
-      secret: result.secret,
-      message: result.message
-    };
+
+    const response = JSON.parse(result.response);
+
+    if (!response.success) {
+        throw new Error(response.error || 'Authentication failed');
+    }
+
+    return response;
   } catch (error: any) {
     console.error('Custom auth error:', error);
     throw error;
@@ -100,6 +108,13 @@ export async function executeAuthFunction(payload: {
 
 export async function createSessionFromToken(userId: string, secret: string) {
   return account.createSession(userId, secret);
+}
+
+export async function updateUserUsername(newUsername: string) {
+    return executeAuthFunction({
+        action: 'update-username',
+        newUsername: newUsername,
+    });
 }
 export async function sendEmailVerification(redirectUrl: string) {
   return account.createVerification(redirectUrl);
