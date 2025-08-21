@@ -67,6 +67,8 @@ export function canonizeUsername(username?: string): string | undefined {
 
 
 
+import { createCustomAuthClient } from '@/utils/auth';
+
 // --- Auth & Account Methods ---
 
 export const CUSTOM_AUTH_FUNCTION_ID = 'custom-auth';
@@ -78,30 +80,20 @@ export async function executeAuthFunction(payload: {
   encryptedPrivateKey?: string;
 }) {
   try {
-    const result = await functions.createExecution(
-      CUSTOM_AUTH_FUNCTION_ID,
-      JSON.stringify(payload),
-      false // async
-    );
-
-    // TypeScript fix: Handle Execution type properly
-    if ((result as any).statusCode !== 200) {
-      const response = JSON.parse((result as any).response);
-      throw new Error(response.message || 'Function execution failed');
+    const authClient = createCustomAuthClient();
+    const result = await authClient.authenticate(payload);
+    
+    if (!result.success) {
+      throw new Error(result.error || 'Authentication failed');
     }
-
-    return JSON.parse((result as any).response);
+    
+    return {
+      userId: result.userId,
+      secret: result.secret,
+      message: result.message
+    };
   } catch (error: any) {
-    console.error('Appwrite function execution error:', error);
-    // Attempt to parse the error response from the function if available
-    try {
-      const innerError = JSON.parse(error.response);
-      if (innerError && innerError.message) {
-        throw new Error(innerError.message);
-      }
-    } catch (e) {
-      // Ignore parsing error, throw original error
-    }
+    console.error('Custom auth error:', error);
     throw error;
   }
 }
