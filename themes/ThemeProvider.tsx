@@ -1,18 +1,22 @@
 import { createContext, useContext, useState, ReactNode } from 'react';
+import { createTheme, ThemeProvider as MuiThemeProvider, Theme as MuiTheme, ThemeOptions } from '@mui/material/styles';
 import defaultDark from './defaultDark';
-import defaultLight from './defaultLight';
-import { Theme } from './types';
 
-const ThemeContext = createContext<{ theme: Theme; setTheme: (t: Theme) => void } | null>(null);
+const ThemeContext = createContext<{ theme: MuiTheme; setTheme: (t: ThemeOptions) => void } | null>(null);
 
 export function ThemeProvider({ children }: { children: ReactNode }) {
-  const [theme, setTheme] = useState<Theme>(defaultDark);
+  const [themeOptions, setThemeOptions] = useState<ThemeOptions>(defaultDark);
+  const theme = createTheme(themeOptions);
 
-  // In a real app, theme switching and persistence would be handled here
+  const handleSetTheme = (newTheme: ThemeOptions) => {
+    setThemeOptions(newTheme);
+  };
 
   return (
-    <ThemeContext.Provider value={{ theme, setTheme }}>
-      {children}
+    <ThemeContext.Provider value={{ theme, setTheme: handleSetTheme }}>
+      <MuiThemeProvider theme={theme}>
+        {children}
+      </MuiThemeProvider>
     </ThemeContext.Provider>
   );
 }

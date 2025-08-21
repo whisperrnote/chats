@@ -86,6 +86,9 @@ export function useAuth() {
     });
 
     // Use the token to create a session
+    if (!token.userId || !token.secret) {
+      throw new Error('Invalid token response from auth function');
+    }
     await createSessionFromToken(token.userId, token.secret);
     const account = await getCurrentAccount();
 
@@ -104,6 +107,9 @@ export function useAuth() {
     const token = await executeAuthFunction({ action: 'login', username });
 
     // Create Appwrite session
+    if (!token.userId || !token.secret) {
+      throw new Error('Invalid token response from auth function');
+    }
     await createSessionFromToken(token.userId, token.secret);
     const account = await getCurrentAccount();
     const userProfile = await findUserByUsername(username);
@@ -151,7 +157,7 @@ export function useAuth() {
     setLoading(true);
     setAuthError(null);
     try {
-      await updateUserUsername(newUsername);
+      await updateUsername(newUsername);
       // Refetch user to get the new username
       const account = await getCurrentAccount();
       setUser(account as any);

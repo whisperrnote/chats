@@ -22,7 +22,15 @@ const StyledToolbar = styled(Toolbar)(({ theme }) => ({
   borderBottom: `1px solid ${theme.palette.divider}`,
 }));
 
-export default function ChatHeader({ chat }) {
+interface ChatHeaderProps {
+  chat?: {
+    title: string;
+    avatarUrl?: string;
+    members?: number;
+  } | null;
+}
+
+export default function ChatHeader({ chat }: ChatHeaderProps) {
   if (!chat) {
     return (
       <StyledToolbar>

@@ -27,7 +27,7 @@ const ExtensionCard = styled(Card)(({ theme }) => ({
   display: 'flex',
   flexDirection: 'column',
   height: '100%',
-  borderRadius: theme.shape.borderRadius * 2,
+  borderRadius: (theme.shape.borderRadius as number) * 2,
   transition: 'transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out',
   '&:hover': {
     transform: 'translateY(-4px)',
@@ -62,7 +62,7 @@ export default function ExtensionsPanel() {
       </Box>
       <Grid container spacing={2}>
         {mockExtensions.map((ext, index) => (
-          <Grid item xs={6} key={ext.id}>
+          <Grid xs={6} key={ext.id}>
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}

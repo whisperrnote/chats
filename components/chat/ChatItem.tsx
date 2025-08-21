@@ -13,7 +13,7 @@ import { styled, alpha } from '@mui/material/styles';
 import { motion } from 'framer-motion';
 
 const StyledListItemButton = styled(ListItemButton)(({ theme }) => ({
-  borderRadius: theme.shape.borderRadius * 2,
+  borderRadius: (theme.shape.borderRadius as number) * 2,
   margin: theme.spacing(0.5, 1),
   '&.Mui-selected': {
     backgroundColor: alpha(theme.palette.primary.main, 0.1),
@@ -29,7 +29,19 @@ const TruncatedTypography = styled(Typography)({
   textOverflow: 'ellipsis',
 });
 
-export default function ChatItem({ chat, selected, onClick }) {
+interface ChatItemProps {
+  chat: {
+    title: string;
+    lastMessage: string;
+    timestamp: string;
+    unreadCount: number;
+    avatarUrl?: string;
+  };
+  selected: boolean;
+  onClick: () => void;
+}
+
+export default function ChatItem({ chat, selected, onClick }: ChatItemProps) {
   const { title, lastMessage, timestamp, unreadCount } = chat;
 
   return (
@@ -47,7 +59,7 @@ export default function ChatItem({ chat, selected, onClick }) {
           </ListItemAvatar>
           <ListItemText
             primary={
-              <TruncatedTypography variant="subtitle1" component="div" fontWeight={500}>
+              <TruncatedTypography variant="subtitle1" fontWeight={500}>
                 {title}
               </TruncatedTypography>
             }

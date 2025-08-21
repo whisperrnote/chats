@@ -1,14 +1,4 @@
 import { Client, Users, Databases, ID, Query } from 'node-appwrite';
-import {
-  generateRegistrationOptions,
-  verifyRegistrationResponse,
-  generateAuthenticationOptions,
-  verifyAuthenticationResponse,
-} from '@simplewebauthn/server';
-import type {
-  VerifiedRegistrationResponse,
-  VerifiedAuthenticationResponse,
-} from '@simplewebauthn/server';
 
 interface Context {
   req: {

@@ -27,7 +27,7 @@ const InputContainer = styled(Box)(({ theme }) => ({
 
 const StyledTextField = styled(TextField)(({ theme }) => ({
   '& .MuiOutlinedInput-root': {
-    borderRadius: theme.shape.borderRadius * 3,
+    borderRadius: (theme.shape.borderRadius as number) * 3,
     backgroundColor: theme.palette.background.default,
     '& fieldset': {
       border: 'none',
@@ -41,7 +41,11 @@ const StyledTextField = styled(TextField)(({ theme }) => ({
   },
 }));
 
-export default function MessageInput({ onSend }) {
+interface MessageInputProps {
+  onSend: (message: string) => void;
+}
+
+export default function MessageInput({ onSend }: MessageInputProps) {
   const [message, setMessage] = useState('');
 
   const handleSend = () => {
@@ -51,7 +55,7 @@ export default function MessageInput({ onSend }) {
     }
   };
 
-  const handleKeyPress = (e) => {
+  const handleKeyPress = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
       handleSend();
