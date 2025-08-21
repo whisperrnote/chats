@@ -14,7 +14,6 @@ import {
 } from 'appwrite';
 
 import type * as Types from '@/types/appwrite.d';
-import { Status } from '@/types/appwrite.d';
 
 // --- Client/Service Initialization ---
 const client = new Client();
@@ -229,12 +228,11 @@ export async function createUserProfile({
 }
 
 export async function createUser(data: Partial<Types.Users>, userId: string = ID.unique()) {
-  // Always set status to 'offline' if not provided using correct enum
+  // Always set status to 'offline' if not provided using correct enum value
   if (!data.status) {
     console.warn('No status provided to createUser, defaulting to offline');
-    data.status = Status.OFFLINE;
+    data.status = 'OFFLINE' as any; // Use string value directly
   }
-  const userData = { ...data };
   const cleanData = (await import('./utils')).stripAppwriteSystemFields(data);
   return databases.createDocument(DB_CORE, COLLECTIONS.USERS, userId, cleanData as any);
 }
@@ -265,10 +263,9 @@ export async function findUserByEmail(email: string) {
 }
 
 // --- USERNAMES ---
-export async function createUsernameDoc({ username, userId, status = 'active', lastUsedBy }: { username: string; userId?: string; status?: string; lastUsedBy?: string }) {
+export async function createUsernameDoc({ username, status = 'active', lastUsedBy }: { username: string; userId?: string; status?: string; lastUsedBy?: string }) {
   const canon = canonizeUsername(username);
   if (!canon) throw new Error('Invalid username');
-  const now = new Date().toISOString();
   // Only include fields defined in the schema
   const data: Record<string, any> = {
     username: canon,
@@ -489,11 +486,11 @@ export async function getMessagesForChat(chatId: string, limit = 50) {
 // --- Real-time Subscriptions ---
 export function subscribeToChat(chatId: string, callback: (payload: any) => void) {
   // Note: .subscribe() is available on the 'client' only for realtime if enabled in Appwrite SDK
-  return client.subscribe(`databases.${DB_CORE}.collections.${COLLECTIONS.MESSAGES}.documents`, callback);
+  return client.subscribe(`databases.${DB_CORE}.collections.${COLLECTIONS.MESSAGES}.documents.${chatId}`, callback);
 }
 
 export function subscribeToUserChats(userId: string, callback: (payload: any) => void) {
-  return client.subscribe(`databases.${DB_CORE}.collections.${COLLECTIONS.CHATMEMBERS}.documents`, callback);
+  return client.subscribe(`databases.${DB_CORE}.collections.${COLLECTIONS.CHATMEMBERS}.documents.${userId}`, callback);
 }
 
 // --- User Profile Management ---
